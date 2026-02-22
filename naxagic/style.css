@@ -1,0 +1,352 @@
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+body {
+    overflow: hidden;
+    background-image: url('images/imac.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.glob {
+    margin: 10px;
+    width: 100%;
+    height: 200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+@keyframes openTab {
+    0% {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    25% {
+        opacity: 1;
+        width: 15px;
+        height: 5px;
+    }
+    50% {
+        opacity: 1;
+        width: 15px;
+        height: 90px;
+    }
+    100% {
+        opacity: 1;
+        width: 90%;
+        height: 90px;
+    }
+}
+
+.TabMenuAtBigScreen, .TabMenuAtSmallScreen {
+    position: relative;
+}
+
+.little {
+    width: 40px;
+    height: 40px;
+    transition: 1s ease;
+    overflow: hidden;
+    position: relative;
+    bottom: 90%;
+    border: 1px solid red;
+}
+
+.centerDiv {
+    display: flex;
+    position: absolute;
+    top: 20px;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    transition: 0.6s ease;
+    height: 80%;
+    flex-direction: row;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    border-radius: 40px;
+
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+
+@keyframes openTab1 {
+    0% {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    25% {
+        opacity: 1;
+        width: 15px;
+        height: 5px;
+    }
+    50% {
+        opacity: 1;
+        width: 15px;
+        height: 95%;
+    }
+    100% {
+        opacity: 1;
+        width: 100px;
+        height: 95%;
+    }
+}
+
+.TabMenu {
+    transition: ease 0.3s;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 10px 1px 10px 1px;
+}
+
+.TabMenuAtSmallScreen {
+    height: 95%;
+    width: 100px;
+    position: fixed;
+    padding: 1px 5px;
+    right: 5px;
+    bottom: 25px;
+    flex-direction: column;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    border-radius: 29px;
+
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.TabMenuAtSmallScreen button {
+    width: 100%;
+    height: calc(100% / 5)
+}
+
+.TabMenuAtBigScreen {
+    width: 90%;
+    height: 90px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    border-radius: 29px;
+
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.tabStartForBig {
+    animation: openTab 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.tabStartForSmall {
+    animation: openTab1 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.divContent {
+    width: 100%;
+    height: 100%;
+    margin-top: 10%;
+    margin-left: 15%;
+    display: flex;
+    flex-direction: row;
+}
+
+.mac-controls {
+    position: absolute;
+    /* Фиксированные отступы от верхнего левого угла РОДИТЕЛЯ */
+    top: 15px;
+    left: 20px;
+    display: flex;
+    gap: 8px;
+}
+
+/* Общие стили для всех кнопок */
+.mac-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    border: 0.5px solid rgba(0, 0, 0, 0.2); /* Тонкая кайма */
+}
+
+
+.mac-red {
+    background: linear-gradient(180deg, #ff605c 0%, #e1483f 100%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.mac-yellow {
+    background: linear-gradient(180deg, #ffbd44 0%, #e6a432 100%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+
+.mac-green {
+    background: linear-gradient(180deg, #00ca4e 0%, #00ad42 100%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.mac-btn:hover {
+    filter: brightness(0.9);
+}
+
+.complexity {
+    width: 25%;
+    height: 80%;
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    margin: 10px;
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    border-radius: 36px;
+
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+h1 {
+    margin: 0;
+    margin-top: 10px;
+    color: #391313;
+    font-family: "Samsung Sharp Sans", sans-serif;
+    font-weight: bold;
+}
+
+p {
+    padding: 10px;
+    margin-top: 5px;
+    color: #391313;
+    font-size: 20px;
+    font-family: "Samsung Sharp Sans", sans-serif;
+    font-weight: bold;
+}
+
+.centerDiv.minimized {
+    display: flex;
+    position: relative;
+    margin: 10px;
+    justify-content: center;
+    align-items: center;
+    width: 45px !important;
+    padding: 0;
+    cursor: pointer;
+}
+
+.centerDiv.minimized .mac-controls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.centerDiv.minimized .complexity {
+    display: none; /* Прячем текст */
+}
+
+.tabM {
+    width: calc(100% / 5);
+    height: 100%;
+    margin: 10px;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+    font-size: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-family: "Samsung Sharp Sans", sans-serif;
+    font-weight: bold;
+    color: #8d4a1b;
+    border-radius: 24px;
+
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.queue .centerDiv.minimized {
+    display: inline-block;
+    position: unset;
+}
+
+.queue {
+    height: 110px;
+    width: 0;
+    display: flex;
+    margin-left: 5px;
+    margin-bottom: 20px;
+    flex-direction: row; /* или column если нужно вниз */
+    gap: 10px;
+    transition: 1s ease;
+    align-items: flex-end; /* красиво как dock */
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+    font-size: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-family: "Samsung Sharp Sans", sans-serif;
+    font-weight: bold;
+    color: #8d4a1b;
+    border-radius: 24px;
+
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
