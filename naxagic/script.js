@@ -3,6 +3,7 @@ let recomenders = {
     reference: document.querySelector('.centerDiv'),
     loop: false
 };
+let a = 0;
 const cache = {};
 
 function restartAnimation(className) {
