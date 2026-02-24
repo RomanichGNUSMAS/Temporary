@@ -4,7 +4,7 @@ let recomenders = {
     loop: false
 };
 
-const cache = {};
+const cachee = {};
 
 function restartAnimation(className) {
     tab.classList.remove('tabStartForBig', 'tabStartForSmall');
