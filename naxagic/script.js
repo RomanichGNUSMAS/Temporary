@@ -5,7 +5,7 @@ let recomenders = {
 };
 
 const cache = {};
-
+const Stack = Array.from({ length: 3 }, () => new Map());
 function restartAnimation(className) {
     tab.classList.remove('tabStartForBig', 'tabStartForSmall');
     void tab.offsetWidth;
@@ -76,6 +76,17 @@ function sleepMain() {
     menuTab.style.marginLeft = '10px';
 }
 
+function remover(id){
+    let elem = document.getElementById(id);
+    if (elem) {
+        if(elem.psevdoName) {
+            Stack[1].delete(elem.psevdoName);
+            Stack[0].delete(elem.psevdoName);
+        }
+        elem.remove();
+
+    }
+}
 window.addEventListener('DOMContentLoaded', () => {
     checkSize();
     calcIcons([recomenders.reference]);
@@ -191,57 +202,71 @@ function svernut(rc) {
             controls.prepend(span);
         }
     }
-    let tabMenu = document.querySelector('.TabMenu');
-    let names = [...document.querySelector('.TabMenu').children].map(m => m.innerText);
-    if (!loop) {
-        if (queue.children.length === 0) queue.style.display = 'flex';
-        if (reference.parentElement !== tabMenu && !reference.id) {
-            let h1 = document.createElement('h1');
-            h1.textContent = 'G';
-            h1.style = `
+    (function () {
+        console.log('mt2')
+        console.log(Stack[0])
+        let tabMenu = document.querySelector('.TabMenu');
+        let names = [...document.querySelector('.TabMenu').children].map(m => m.innerText);
+        if (!loop) {
+            if (Stack[0].has(reference.psevdoName)) {
+                console.log('mta')
+                return;
+            }
+                if (queue.children.length === 0) queue.style.display = 'flex';
+            if (reference.parentElement !== tabMenu && !reference.id) {
+                let h1 = document.createElement('h1');
+                h1.textContent = 'G';
+                h1.style = `
                 font-size: 20px;
                 position: relative;
                 color: #8d4a1b;
                 left:15px;
                 top: 40px;
             `
-            console.log(reference.parentElement, tabMenu);
-            h1.id = 'temp';
-            reference.appendChild(h1);
-            reference.remove();
-        } else {
-            console.log(reference.psevdoName)
-            for (let i = 0; i < names.length; i++) {
-                if (reference.psevdoName === names[i]) {
-                    let h1 = document.createElement('h1');
-                    h1.textContent = names[i][0];
-                    h1.style = `
+                console.log(reference.parentElement, tabMenu);
+                h1.id = 'temp';
+                reference.appendChild(h1);
+                reference.remove();
+            } else {
+                console.log(reference.psevdoName)
+                for (let i = 0; i < names.length; i++) {
+                    if (reference.psevdoName === names[i]) {
+                        let h1 = document.createElement('h1');
+                        h1.textContent = names[i][0];
+                        h1.style = `
                 font-size: 20px;
                 position: relative;
                 color: #8d4a1b;
                 left:17px;
                 top: 40px;
             `
-                    h1.id = 'temp';
-                    reference.appendChild(h1);
-                    break;
+                        h1.id = 'temp';
+                        reference.appendChild(h1);
+                        break;
+                    }
                 }
             }
+            queue.appendChild(reference);
+            Stack[0].set(reference.psevdoName,reference);
+            Stack[1].delete(reference.psevdoName);
+        } else {
+            reference.remove();
+            if (!reference.psevdoName) {
+                let gl = document.querySelector('.glob');
+                gl.appendChild(reference);
+            } else {
+                document.body.appendChild(reference);
+                Stack[1].set(reference.psevdoName, reference);
+            }
+            reference.lastElementChild.remove();
+            Stack[0].delete(reference.psevdoName);
+            if (queue.children.length === 0) queue.style.display = 'none';
         }
-        queue.appendChild(reference);
-    } else {
-        reference.remove();
-        if (!reference.psevdoName) {
-            let gl = document.querySelector('.glob');
-            gl.appendChild(reference);
-        } else document.body.appendChild(reference);
-        reference.lastElementChild.remove();
-        if (queue.children.length === 0) queue.style.display = 'none';
-    }
-    queue.style.width = `${queue.children.length * 75}px`;
+        queue.style.width = `${queue.children.length * 75}px`;
 
 
-    rec.loop = !loop;
+        rec.loop = !loop;
+    })()
 }
 
 function createInstance() {
@@ -276,33 +301,58 @@ function createInstance() {
 }
 
 createInstance.count = 0;
-
 function openTab(typeOfTab) {
+
+    let name;
+
     switch (typeOfTab) {
         case 'Wiki':
-            let div = createInstance();
-            div.psevdoName = 'Recursion Wiki';
-            document.body.appendChild(div);
+            name = 'Recursion Wiki';
             break;
         case 'Examples':
-            let div1 = createInstance();
-            div1.psevdoName = 'Recursion Examples';
-            document.body.appendChild(div1);
+            name = 'Recursion Examples';
             break;
         case 'Cybersecurity':
-            let div2 = createInstance();
-            div2.psevdoName = 'Using Recursion In Cybersecurity';
-            document.body.appendChild(div2);
+            name = 'Using Recursion In Cybersecurity';
             break;
         case "Compiler":
-            let div3 = createInstance();
-            div3.psevdoName = 'C++ Compiler';
-            document.body.appendChild(div3);
+            name = 'C++ Compiler';
             break;
         case "AI":
-            let div4 = createInstance();
-            div4.psevdoName = 'Ask to AI';
-            document.body.appendChild(div4);
+            name = 'Ask to AI';
             break;
+    }
+    if(Stack[1].has(name)) return;
+    if (Stack[0].has(name)) {
+        let existingTab = Stack[0].get(name);
+        Stack[0].delete(name);
+
+        existingTab.remove();
+        document.body.appendChild(existingTab);
+
+        existingTab.classList.toggle('minimized');
+        existingTab.lastChild.remove();
+        existingTab.firstElementChild.innerHTML = `<div class='mac-controls'> 
+            <span class="mac-btn mac-red"></span>
+            <span class="mac-btn mac-yellow"></span>
+        </div>`
+        cache[existingTab.id].loop = false;
+        const Queue = document.querySelector('.queue');
+        Queue.style.width = `${Queue.children.length * 75}px`;
+        let button = existingTab.querySelector('.mac-red');
+        let button1 = existingTab.querySelector('.mac-yellow');
+        button1.onclick = () => svernut(existingTab.id);
+        button.onclick = () => remover(existingTab.id);
+        Stack[1].set(name,existingTab);
+        return;
+    }
+
+    let div = createInstance();
+    div.psevdoName = name;
+    document.body.appendChild(div);
+    Stack[1].set(div.psevdoName,div);
+    let redButton = div.querySelector('.mac-red');
+    if (redButton) {
+        redButton.onclick = () => remover(div.id);
     }
 }

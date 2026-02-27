@@ -1,4 +1,12 @@
 
+
+@font-face {
+    font-family: 'Samsung Sharp Sans'; /* Придумываете любое имя для шрифта */
+    src: url('./product-sans/samsung_s_sharp_by_629lyric-d8y77l9.woff') format('woff'); /* Путь к файлу */
+    font-weight: bold; /* Вес шрифта (normal, bold и т.д.) */
+    font-style: normal;  /* Стиль (normal, italic) */
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -290,7 +298,6 @@ p {
     left: 50%;
     transform: translate(-50%, -50%);
 }
-
 
 .centerDiv.minimized .complexity {
     display: none; /* Прячем текст */
