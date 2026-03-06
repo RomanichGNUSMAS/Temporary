@@ -3,9 +3,24 @@ let recomenders = {
     reference: document.querySelector('.centerDiv'),
     loop: false
 };
+recomenders.reference.psevdoName = 'Effectivity'
+
+const style = document.createElement('style');
+style.textContent = `
+    .divContent::-webkit-scrollbar {
+        width: 0px;
+        background: transparent; /* Делает фон прозрачным */
+    }
+    .divContent {
+        -ms-overflow-style: none;  /* IE и Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+`;
+document.head.appendChild(style);
 
 const cache = {};
-const Stack = Array.from({ length: 3 }, () => new Map());
+const Stack = Array.from({length: 3}, () => new Map());
+Stack[1].set(recomenders.reference.psevdoName,recomenders.reference);
 function restartAnimation(className) {
     tab.classList.remove('tabStartForBig', 'tabStartForSmall');
     void tab.offsetWidth;
@@ -52,12 +67,12 @@ function sleepMain() {
     reference.style.cssText = `
         position:relative;
         width: 110px;
-        margin:auto;
-        margin-left:15px;
+        margin-bottom:40px;
+        margin-left:20px;
         height: 110px;
         transition: 0.5s ease;
     `;
-
+    Stack[1].delete(recomenders.reference.psevdoName);
     const button = document.createElement('button');
     button.className = 'tabM';
     button.innerText = 'Recs';
@@ -73,13 +88,13 @@ function sleepMain() {
 
     reference.appendChild(button);
     reference.classList.add('sleepMode');
-    menuTab.style.marginLeft = '10px';
+    menuTab.style.marginLeft = '20px';
 }
 
-function remover(id){
+function remover(id) {
     let elem = document.getElementById(id);
     if (elem) {
-        if(elem.psevdoName) {
+        if (elem.psevdoName) {
             Stack[1].delete(elem.psevdoName);
             Stack[0].delete(elem.psevdoName);
         }
@@ -87,6 +102,7 @@ function remover(id){
 
     }
 }
+
 window.addEventListener('DOMContentLoaded', () => {
     checkSize();
     calcIcons([recomenders.reference]);
@@ -107,6 +123,7 @@ function reserveForRecomendations() {
             menu.style.display = 'inline-block';
 
     });
+    Stack[1].set(cache['recomendations'].reference);
     cache['recomendations'].reference.style.cssText = `
         width:90%;
         height:80%;
@@ -125,19 +142,24 @@ function svernut(rc) {
     const {reference, loop} = rec;
     const tab = reference.querySelector('.divContent');
     const queue = document.querySelector('.queue');
-    if (tab) {
-        tab.style.cssText = !loop
-            ? "display: none;"
-            : "display: block; display: flex; flex-direction: row;";
+
+    const toggleBtn = reference.querySelector('.mac-yellow, .mac-green');
+    if(toggleBtn.className.includes('mac-green')) {
+        if(Stack[1].size) return;
     }
+    Array.from(reference.children).forEach(child => {
+        if (!child.classList.contains('mac-controls') && child.id !== 'temp') {
+            child.style.display = !loop ? "none" : "flex";
+        }
+    });
     let isHere = rec.reference.firstElementChild.querySelector('.mac-red')
     if (isHere) {
         isHere.remove();
     }
-    const toggleBtn = reference.querySelector('.mac-yellow, .mac-green');
     if (toggleBtn) {
         toggleBtn.classList.toggle('mac-green', !loop);
         toggleBtn.classList.toggle('mac-yellow', loop);
+        console.log(toggleBtn.className);
     }
     toggleBtn.onclick = () => {
         svernut(rc);
@@ -163,7 +185,8 @@ function svernut(rc) {
                     position: relative;
                     width:110px;
                     height:110px;
-                    margin:auto;
+                    margin-bottom:50px;
+                    margin-left:20px;
                     overflow:hidden;
                     border-radius:34px;
                     transition: 0.5s ease;
@@ -212,7 +235,7 @@ function svernut(rc) {
                 console.log('mta')
                 return;
             }
-                if (queue.children.length === 0) queue.style.display = 'flex';
+            if (queue.children.length === 0) queue.style.display = 'flex';
             if (reference.parentElement !== tabMenu && !reference.id) {
                 let h1 = document.createElement('h1');
                 h1.textContent = 'G';
@@ -247,17 +270,13 @@ function svernut(rc) {
                 }
             }
             queue.appendChild(reference);
-            Stack[0].set(reference.psevdoName,reference);
+            Stack[0].set(reference.psevdoName, reference);
             Stack[1].delete(reference.psevdoName);
         } else {
+            if(Stack[1].size) return;
             reference.remove();
-            if (!reference.psevdoName) {
-                let gl = document.querySelector('.glob');
-                gl.appendChild(reference);
-            } else {
-                document.body.appendChild(reference);
-                Stack[1].set(reference.psevdoName, reference);
-            }
+            document.body.appendChild(reference);
+            Stack[1].set(reference.psevdoName, reference);
             reference.lastElementChild.remove();
             Stack[0].delete(reference.psevdoName);
             if (queue.children.length === 0) queue.style.display = 'none';
@@ -301,20 +320,144 @@ function createInstance() {
 }
 
 createInstance.count = 0;
+
 function openTab(typeOfTab) {
 
     let name;
-
+    let div = createInstance();
     switch (typeOfTab) {
-        case 'Wiki':
+        case 'Wiki': {
             name = 'Recursion Wiki';
+            let p = Array.from({length: 2}, () => document.createElement('p'));
+            const strs = [
+                "Ռեկուրսիան իրենից ներկայացնում է ցանկացած օբյեկտի, երևույթի կամ գործընթացի սահմանման այնպիսի մեթոդ, որի դեպքում տվյալ օբյեկտը նկարագրվում է հենց իր միջոցով։ Սա մի եզակի իրավիճակ է, երբ համակարգի կառուցվածքային ամբողջականությունը ենթադրում է հենց նույնատիպ օբյեկտի առկայություն իր իսկ ներսում՝ ավելի փոքր մասշտաբով կամ պարզեցված տեսքով։ Ըստ էության, մենք գործ ունենք ինքնանմանության սկզբունքի հետ, որտեղ գործընթացի յուրաքանչյուր քայլ հղում է կատարում նախորդին կամ հաջորդին՝ ստեղծելով տրամաբանական մի շղթա, որտեղ ամբողջը բաղկացած է իր իսկ պատճեններից:",
+                "Ռեկուրսիայի հասկացությունը հիմնարար դերակատարում ունի մարդկային գիտելիքների ամենատարբեր բնագավառներում՝ սկսած լեզվաբանական կառուցվածքների վերլուծությունից, որտեղ նախադասությունները կարող են ներառել այլ նախադասություններ, մինչև ֆորմալ տրամաբանություն և փիլիսոփայություն։ Սակայն իր առավելագույն գործնական և տեսական արժեքը ռեկուրսիան ստանում է մաթեմատիկական գիտություններում և համակարգչային ճարտարագիտության մեջ։ Ծրագրավորման մեջ այն հանդիսանում է հզորագույն գործիք, որը թույլ է տալիս բարդ խնդիրները տրոհել ավելի պարզ, նույնատիպ ենթախնդիրների՝ ապահովելով կոդի էլեգանտությունն ու ալգորիթմական լուծումների արդյունավետությունը հատկապես տվյալների կառուցվածքների հետ աշխատելիս։"
+            ]
+            for (let i = 0; i < strs.length; i++) {
+                console.log(strs[i]);
+                p[i].textContent = strs[i];
+            }
+            let pathOfImg = ['./images/FibSeq.jpg', './images/FibEx.jpg'];
+            let img = Array.from({length: 2}, () => document.createElement('img'));
+
+            let div1 = document.createElement('div');
+            div1.classList.add('divContent');
+            div1.style.cssText = `
+    width: 90%;
+    height: 80%;
+    display: flex;
+    margin:0;
+    flex-direction: column; /* Հիմնական ուղղությունը՝ ներքև */
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px; /* Տարածություն էլեմենտների միջև */
+    overflow-y: auto; /* Եթե տեքստը շատ լինի, սքրոլ լինի */
+`;
+
+            let imgContainer = document.createElement('div');
+            imgContainer.style.cssText = `
+    display: flex;
+    flex-direction: row; /* Նկարները՝ իրար կողք */
+    justify-content: center;
+    gap: 10px; /* Նկարների միջև հեռավորություն */
+    width: 100%;
+`;
+
+            img.forEach((element, index) => {
+                element.src = pathOfImg[index];
+                element.style.width = "45%";
+                element.style.objectFit = "cover";
+                element.style.borderRadius = "8px";
+                imgContainer.appendChild(element);
+            });
+
+            div1.appendChild(p[0]);
+            div1.appendChild(imgContainer);
+            div1.appendChild(p[1]);
+
+            div.appendChild(div1);
             break;
-        case 'Examples':
+        }
+        case 'Examples': {
             name = 'Recursion Examples';
+            let imgPath = './images/FibPhoto.jpg';
+            let img = document.createElement('img');
+            img.src = './images/FibPhoto.jpg';
+            img.style.cssText = `
+                max-width:60%;
+                max-height:70%;
+            `
+            let p = document.createElement('p');
+            p.style.cssText = `
+                font-size:22.5px;
+            `
+            p.textContent = "Այստեղ բերված են օրինակներ ինչպես է ռեկուրսիայով կառուցված բնությունը, այստեղ կարող ենք նկատել, որ այս ամենը հիշեցնում է ֆիբոնաչիի հաջորդականությունը բնության մեջ և դա ճիշտ նկատումն է քանի որ Ֆիբոնաչին ստեղծել է իր հաջորդականությունը հարյուրավոր տարիներ առաջ և դրա հիման վրա ստեղծվել են ռեկուրենտ ֆունկցիաներ և ռեկուրսիայի գաղափարը";
+            let div1 = document.createElement('div');
+            div1.style.cssText = `
+                width: 90%;
+                height: 80%;
+                display:flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+            `
+            div1.appendChild(img);
+            div1.appendChild(p);
+            div.appendChild(div1);
             break;
-        case 'Cybersecurity':
+        }
+        case 'Cybersecurity': {
             name = 'Using Recursion In Cybersecurity';
+            let imgPath = ['./images/CBRec.jpg','./images/CBRec2.jpg'];
+            let img = document.createElement('img');
+            let img1 = document.createElement('img');
+            [img.src,img1.src] = imgPath;
+            let p = Array.from({length:2},function () {
+                return document.createElement('p');
+            })
+            img.style.cssText = `
+                max-width:60%;
+                max-height:70%;
+            `
+            img1.style.cssText = `
+                max-width:65%;
+                max-height:70%;
+            `
+            const strs = [
+                "Ինչպես են ռեկուրսիան օգտագործում\
+                ծրագրավորման և կիբեռանվտանգության մեջ?",
+                "Ահա մի օրինակ, նկարում պատկերված է  համակարգչի թղթապանակ պարզագույն ծառ, յուրաքանչյուր\ \
+                թղթապանակ գտնվում են ուրիշ թղթապանակներ, որոնք պարունակում տարբեր ֆայլեր։ Ռեկուրսիան մեզ հնարավորություն են տալիս \"ճամփորդել\" թղթապանակների մեջ, այսինքն գրելով ռեկուրսիայի հիման վրա համապատասխան ծրագիր այն կարող է մտնել այդ թղթապանակներ, ուսումնասիրել ֆայլային պարունակությունը, ետ գնալ և ուրիշ թղթապանակներ տեղափոխվել մինչև չգտնի մեր նշված ինֆորմացիայով ֆայլը։\
+                ինչպես խոսվել է ռեկուրսինա քայլ առ քայլ է կատարում իր գործողությունները և արդյունք ստանալուց հետո քայլ առ քայլ ետ գալիս,\
+                սա շատ հարմար յուրահատկություն է, որը կարելի է օգտագործել այսպիսի դեպքերի համար"
+            ]
+            for(let i = 0;i < 2;++i){
+                p[i].textContent = strs[i];
+            }
+            let div1 = document.createElement('div');
+            div1.style.cssText = `
+                position:absolute;
+                width:90%;
+                height:80%;
+                display:flex;
+                flex-direction: column;
+                justify-content: center;
+            `
+            let div2 = document.createElement('div');
+            div2.style.cssText = `
+                display:flex;
+                flex-direction: row;
+                gap:10px;
+            `
+            div2.appendChild(img);
+            div2.appendChild(img1);
+            div1.appendChild(div2);
+            for(let i of p){
+                div1.appendChild(i);
+            }
+            div.appendChild(div1);
             break;
+        }
         case "Compiler":
             name = 'C++ Compiler';
             break;
@@ -322,7 +465,8 @@ function openTab(typeOfTab) {
             name = 'Ask to AI';
             break;
     }
-    if(Stack[1].has(name)) return;
+    if(Stack[1].size) return;
+    if (Stack[1].has(name)) return;
     if (Stack[0].has(name)) {
         let existingTab = Stack[0].get(name);
         Stack[0].delete(name);
@@ -332,25 +476,40 @@ function openTab(typeOfTab) {
 
         existingTab.classList.toggle('minimized');
         existingTab.lastChild.remove();
+
+        Array.from(existingTab.children).forEach(child => {
+            if (!child.classList.contains('mac-controls')) {
+                child.style.display = 'flex';
+            }
+        });
+
         existingTab.firstElementChild.innerHTML = `<div class='mac-controls'> 
             <span class="mac-btn mac-red"></span>
             <span class="mac-btn mac-yellow"></span>
         </div>`
+
         cache[existingTab.id].loop = false;
+
         const Queue = document.querySelector('.queue');
         Queue.style.width = `${Queue.children.length * 75}px`;
         let button = existingTab.querySelector('.mac-red');
         let button1 = existingTab.querySelector('.mac-yellow');
         button1.onclick = () => svernut(existingTab.id);
         button.onclick = () => remover(existingTab.id);
-        Stack[1].set(name,existingTab);
+        Stack[1].set(name, existingTab);
         return;
     }
-
-    let div = createInstance();
+    let h1 = document.createElement('h1');
+    h1.textContent = name;
+    h1.style = `
+        position: absolute;
+        top:5px;
+        left:${Math.floor([...Stack[1]][0] / 2)}px;
+    `
     div.psevdoName = name;
+    div.appendChild(h1);
     document.body.appendChild(div);
-    Stack[1].set(div.psevdoName,div);
+    Stack[1].set(div.psevdoName, div);
     let redButton = div.querySelector('.mac-red');
     if (redButton) {
         redButton.onclick = () => remover(div.id);
