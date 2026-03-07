@@ -72,7 +72,7 @@ function sleepMain() {
         height: 110px;
         transition: 0.5s ease;
     `;
-    Stack[1].delete(recomenders.reference.psevdoName);
+    Stack[1].delete(cache['recomendations'].reference.psevdoName);
     const button = document.createElement('button');
     button.className = 'tabM';
     button.innerText = 'Recs';
