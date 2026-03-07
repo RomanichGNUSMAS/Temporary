@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "serve": "^14.2.6"
+  },
+  "name": "temporary",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RomanichGNUSMAS/Temporary.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RomanichGNUSMAS/Temporary/issues"
+  },
+  "homepage": "https://github.com/RomanichGNUSMAS/Temporary#readme",
+  "description": ""
+}
