@@ -7,6 +7,16 @@
     font-style: normal;  /* Стиль (normal, italic) */
 }
 
+/* Добавь это внутрь style.textContent */
+.no-scrollbar::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -208,14 +218,13 @@ body {
 
 .mac-controls {
     position: absolute;
-    /* Фиксированные отступы от верхнего левого угла РОДИТЕЛЯ */
     top: 15px;
     left: 20px;
     display: flex;
     gap: 8px;
+    z-index: 100;
 }
 
-/* Общие стили для всех кнопок */
 .mac-btn {
     width: 14px;
     height: 14px;
@@ -297,7 +306,6 @@ p {
     padding: 0;
     cursor: pointer;
 
-    /* 🔥 ЭТИ ТРИ СТРОЧКИ ВЕРНУТ ОКНО ИЗ НЕВИДИМОСТИ: */
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

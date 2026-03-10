@@ -427,20 +427,52 @@ function openTab(typeOfTab) {
             let img = document.createElement('img');
             let img1 = document.createElement('img');
             [img.src, img1.src] = imgPath;
-            let p = Array.from({length: 2}, () => document.createElement('p'))
-            img.style.cssText = `max-width:60%; max-height:70%;`
-            img1.style.cssText = `max-width:65%; max-height:70%;`
-            const strs = ["Ինչպես են ռեկուրսիան օգտագործում ծրագրավորման և կիբեռանվտանգության մեջ?", "Ահա մի օրինակ, նկարում պատկերված է համակարգչի թղթապանակ պարզագույն ծառ, յուրաքանչյուր թղթապանակ գտնվում են ուրիշ թղթապանակներ, որոնք պարունակում տարբեր ֆայլեր։ Ռեկուրսիան մեզ հնարավորություն են տալիս \"ճամփորդել\" թղթապանակների մեջ, այսինքն գրելով ռեկուրսիայի հիման վրա համապատասխան ծրագիր այն կարող է մտնել այդ թղթապանակներ, ուսումնասիրել ֆայլային պարունակությունը, ետ գնալ և ուրիշ թղթապանակներ տեղափոխվել մինչև չգտնի մեր նշված ինֆորմացիայով ֆայլը։ ինչպես խոսվել է ռեկուրսինա քայլ առ քայլ է կատարում իր գործողությունները և արդյունք ստանալուց հետո քայլ առ քայլ ետ գալիս, սա շատ հարմար յուրահատկություն է, որը կարելի է օգտագործել այսպիսի դեպքերի համար"]
-            for (let i = 0; i < 2; ++i) p[i].textContent = strs[i];
+
+            let p = Array.from({length: 2}, () => document.createElement('p'));
+
+            img.style.cssText = `max-width:45%; max-height: 100%; border-radius: 8px; object-fit: cover;`;
+            img1.style.cssText = `max-width:45%; max-height: 100%; border-radius: 8px; object-fit: cover;`;
+
+            const strs = [
+                "Ինչպես են ռեկուրսիան օգտագործում ծրագրավորման և կիբեռանվտանգության մեջ?",
+                "Ահա մի օրինակ, նկարում պատկերված է համակարգչի թղթապանակ պարզագույն ծառ, յուրաքանչյուր թղթապանակ գտնվում են ուրիշ թղթապանակներ, որոնք պարունակում տարբեր ֆայլեր։ Ռեկուրսիան մեզ հնարավորություն են տալիս \"ճամփորդել\" թղթապանակների մեջ, այսինքն գրելով ռեկուրսիայի հիման վրա համապատասխան ծրագիր այն կարող է մտնել այդ թղթապանակներ, ուսումնասիրել ֆայլային պարունակությունը, ետ գնալ և ուրիշ թղթապանակներ տեղափոխվել մինչև չգտնի մեր նշված ինֆորմացիայով ֆայլը։ ինչպես խոսվել է ռեկուրսինա քայլ առ քայլ է կատարում իր գործողությունները և արդյունք ստանալուց հետո քայլ առ քայլ ետ գալիս, սա շատ հարմար յուրահատկություն է, որը կարելի է օգտագործել այսպիսի դեպքերի համար"
+            ];
+
+            for (let i = 0; i < 2; ++i) {
+                p[i].textContent = strs[i];
+                p[i].style.cssText = `margin: 10px 0; line-height: 1.5; text-align: justify; padding: 0 20px;`;
+            }
 
             let div1 = document.createElement('div');
-            div1.style.cssText = `position:absolute; width:90%; height:80%; display:flex; flex-direction: column; justify-content: center;`
+            div1.classList.add('no-scrollbar');
+            div1.style.cssText = `
+                width: 90%;
+                height: 80%; 
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                overflow-y: auto; 
+                padding-top: 30px;
+                margin-top: 20px;
+            `;
+
             let div2 = document.createElement('div');
-            div2.style.cssText = `display:flex; flex-direction: row; gap:10px;`
+            div2.style.cssText = `
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 15px;
+                width: 100%;
+                margin-bottom: 20px;
+            `;
+
             div2.appendChild(img);
             div2.appendChild(img1);
+
+            div1.appendChild(p[0]);
             div1.appendChild(div2);
-            for (let i of p) div1.appendChild(i);
+            div1.appendChild(p[1]);
+
             div.appendChild(div1);
             break;
         }
@@ -820,6 +852,7 @@ function openTab(typeOfTab) {
     h1.style.cssText = `position: absolute; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; color: #391313; font-family: "Samsung Sharp Sans", sans-serif; font-weight: bold;`;
 
     div.psevdoName = name || 'Unknown';
+    if(window.innerWidth > 1024 && window.innerHeight > 1024)
     div.appendChild(h1);
     document.body.appendChild(div);
     Stack[1].set(div.psevdoName, div);
