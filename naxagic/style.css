@@ -296,6 +296,11 @@ p {
     width: 45px !important;
     padding: 0;
     cursor: pointer;
+
+    /* 🔥 ЭТИ ТРИ СТРОЧКИ ВЕРНУТ ОКНО ИЗ НЕВИДИМОСТИ: */
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
 }
 
 .centerDiv.minimized .mac-controls {

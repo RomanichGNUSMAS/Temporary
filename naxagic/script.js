@@ -1,26 +1,78 @@
 const tab = document.querySelector('.TabMenu');
 let recomenders = {
-    reference: document.querySelector('.centerDiv'),
-    loop: false
+    reference: document.querySelector('.centerDiv'), loop: false
 };
 recomenders.reference.psevdoName = 'Effectivity'
 
 const style = document.createElement('style');
 style.textContent = `
+    /* Убираем скроллбар */
     .divContent::-webkit-scrollbar {
         width: 0px;
-        background: transparent; /* Делает фон прозрачным */
+        background: transparent;
     }
     .divContent {
-        -ms-overflow-style: none;  /* IE и Edge */
-        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* 🔥 АНИМАЦИЯ ОТКРЫТИЯ ОКНА (Scale up + Fade in) */
+    @keyframes windowOpen {
+        0% { opacity: 0; transform: scale(0.85) translateY(20px); filter: blur(10px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
+    }
+
+    /* 🔥 АНИМАЦИЯ ЗАКРЫТИЯ ОКНА (Scale down + Fade out) */
+    @keyframes windowClose {
+        0% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(5px); }
+    }
+
+    /* 🔥 АНИМАЦИЯ СВОРАЧИВАНИЯ (Улет в Док) */
+    @keyframes windowMinimize {
+        0% { opacity: 1; transform: scale(1) translateY(0); }
+        100% { opacity: 0; transform: scale(0.1) translateY(500px); }
+    }
+
+    /* 🔥 АНИМАЦИЯ РАЗВОРАЧИВАНИЯ ИЗ ДОКА */
+    @keyframes windowRestore {
+        0% { opacity: 0; transform: scale(0.1) translateY(500px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Применяем анимацию открытия по умолчанию для новых окон */
+    .centerDiv {
+        animation: windowOpen 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Класс для плавного закрытия */
+    .closing {
+        animation: windowClose 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+
+    /* Класс для сворачивания */
+    .minimizing {
+        animation: windowMinimize 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+
+    /* Класс для разворачивания */
+    .restoring {
+        animation: windowRestore 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+
+    /* Исправление невидимости окна в Доке */
+    .centerDiv.minimized {
+        animation: none !important; 
+        opacity: 1 !important;
+        transform: none !important;
     }
 `;
 document.head.appendChild(style);
 
 const cache = {};
 const Stack = Array.from({length: 3}, () => new Map());
-Stack[1].set(recomenders.reference.psevdoName,recomenders.reference);
+Stack[1].set(recomenders.reference.psevdoName, recomenders.reference);
+
 function restartAnimation(className) {
     tab.classList.remove('tabStartForBig', 'tabStartForSmall');
     void tab.offsetWidth;
@@ -29,20 +81,15 @@ function restartAnimation(className) {
 
 function checkSize() {
     if (window.innerWidth >= 1024) {
-
         if (!tab.classList.contains('TabMenuAtBigScreen')) {
             restartAnimation('tabStartForBig');
         }
-
         tab.classList.remove('TabMenuAtSmallScreen');
         tab.classList.add('TabMenuAtBigScreen');
-
     } else {
-
         if (!tab.classList.contains('TabMenuAtSmallScreen')) {
             restartAnimation('tabStartForSmall');
         }
-
         tab.classList.remove('TabMenuAtBigScreen');
         tab.classList.add('TabMenuAtSmallScreen');
     }
@@ -94,12 +141,15 @@ function sleepMain() {
 function remover(id) {
     let elem = document.getElementById(id);
     if (elem) {
-        if (elem.psevdoName) {
-            Stack[1].delete(elem.psevdoName);
-            Stack[0].delete(elem.psevdoName);
-        }
-        elem.remove();
-
+        elem.classList.add('closing');
+        setTimeout(() => {
+            if (elem.psevdoName !== undefined) {
+                Stack[1].delete(elem.psevdoName);
+                Stack[0].delete(elem.psevdoName);
+            }
+            elem.remove();
+            delete cache[id];
+        }, 300);
     }
 }
 
@@ -111,19 +161,14 @@ window.addEventListener('DOMContentLoaded', () => {
     cache['recomendations'] = recomenders;
 });
 
-let flag = false;
-
 function reserveForRecomendations() {
     cache['recomendations'].reference.lastElementChild.remove();
     [...cache['recomendations'].reference.querySelectorAll('*')].forEach(menu => {
         if (menu.classList.contains('divContent')) {
-            console.log('mta')
             menu.style.display = 'flex';
-        } else
-            menu.style.display = 'inline-block';
-
+        } else menu.style.display = 'inline-block';
     });
-    Stack[1].set(cache['recomendations'].reference);
+    Stack[1].set(cache['recomendations'].reference.psevdoName, cache['recomendations'].reference);
     cache['recomendations'].reference.style.cssText = `
         width:90%;
         height:80%;
@@ -138,35 +183,50 @@ function reserveForRecomendations() {
 
 function svernut(rc) {
     const rec = cache[rc] ? cache[rc] : document.getElementById(rc) || recomenders;
-    const menuTab = document.querySelector('.TabMenu');
     const {reference, loop} = rec;
-    const tab = reference.querySelector('.divContent');
-    const queue = document.querySelector('.queue');
 
-    const toggleBtn = reference.querySelector('.mac-yellow, .mac-green');
-    if(toggleBtn.className.includes('mac-green')) {
-        if(Stack[1].size) return;
+    if (!loop) {
+        reference.classList.remove('restoring');
+        reference.classList.add('minimizing');
+
+        setTimeout(() => {
+            executeSvernutLogic(rc, rec, reference);
+        }, 400);
+    } else {
+        executeSvernutLogic(rc, rec, reference);
     }
+}
+
+function executeSvernutLogic(rc, rec, reference) {
+    const loop = rec.loop;
+    const menuTab = document.querySelector('.TabMenu');
+    const queue = document.querySelector('.queue');
+    const toggleBtn = reference.querySelector('.mac-yellow, .mac-green');
+
+    if (toggleBtn && toggleBtn.className.includes('mac-green')) {
+        if (Stack[1].size) return;
+    }
+
     Array.from(reference.children).forEach(child => {
         if (!child.classList.contains('mac-controls') && child.id !== 'temp') {
             child.style.display = !loop ? "none" : "flex";
         }
     });
+
     let isHere = rec.reference.firstElementChild.querySelector('.mac-red')
     if (isHere) {
         isHere.remove();
     }
+
     if (toggleBtn) {
         toggleBtn.classList.toggle('mac-green', !loop);
         toggleBtn.classList.toggle('mac-yellow', loop);
-        console.log(toggleBtn.className);
-    }
-    toggleBtn.onclick = () => {
-        svernut(rc);
-        console.log(rc, rec)
+        toggleBtn.onclick = () => { svernut(rc); };
     }
 
+    reference.classList.remove('minimizing');
     reference.classList.toggle('minimized');
+
     if (loop) {
         const controls = reference.querySelector('.mac-controls') || reference.firstElementChild;
         if (controls && !controls.querySelector('.mac-red')) {
@@ -175,8 +235,8 @@ function svernut(rc) {
 
             span.onclick = () => {
                 if (reference !== recomenders.reference) {
-                    reference.remove();
-                    cache[rc] = null;
+                    // ИСПОЛЬЗУЕМ НАШУ УМНУЮ ФУНКЦИЮ REMOVER (Исправление утечки памяти)
+                    remover(reference.id);
                     return;
                 }
 
@@ -219,50 +279,33 @@ function svernut(rc) {
                 reference.classList.add('sleepMode');
                 menuTab.style.cssText = 'margin-left:10px;';
                 rec.loop = false;
-
+                Stack[1].delete(reference.psevdoName);
             };
-
             controls.prepend(span);
         }
     }
+
     (function () {
-        console.log('mt2')
-        console.log(Stack[0])
         let tabMenu = document.querySelector('.TabMenu');
         let names = [...document.querySelector('.TabMenu').children].map(m => m.innerText);
         if (!loop) {
-            if (Stack[0].has(reference.psevdoName)) {
-                console.log('mta')
-                return;
-            }
+            if (Stack[0].has(reference.psevdoName)) return;
+
             if (queue.children.length === 0) queue.style.display = 'flex';
+
             if (reference.parentElement !== tabMenu && !reference.id) {
                 let h1 = document.createElement('h1');
                 h1.textContent = 'G';
-                h1.style = `
-                font-size: 20px;
-                position: relative;
-                color: #8d4a1b;
-                left:15px;
-                top: 40px;
-            `
-                console.log(reference.parentElement, tabMenu);
+                h1.style = `font-size: 20px; position: relative; color: #8d4a1b; left:15px; top: 40px;`
                 h1.id = 'temp';
                 reference.appendChild(h1);
                 reference.remove();
             } else {
-                console.log(reference.psevdoName)
                 for (let i = 0; i < names.length; i++) {
                     if (reference.psevdoName === names[i]) {
                         let h1 = document.createElement('h1');
                         h1.textContent = names[i][0];
-                        h1.style = `
-                font-size: 20px;
-                position: relative;
-                color: #8d4a1b;
-                left:17px;
-                top: 40px;
-            `
+                        h1.style = `font-size: 20px; position: relative; color: #8d4a1b; left:17px; top: 40px;`
                         h1.id = 'temp';
                         reference.appendChild(h1);
                         break;
@@ -273,7 +316,7 @@ function svernut(rc) {
             Stack[0].set(reference.psevdoName, reference);
             Stack[1].delete(reference.psevdoName);
         } else {
-            if(Stack[1].size) return;
+            if (Stack[1].size) return;
             reference.remove();
             document.body.appendChild(reference);
             Stack[1].set(reference.psevdoName, reference);
@@ -283,14 +326,28 @@ function svernut(rc) {
         }
         queue.style.width = `${queue.children.length * 75}px`;
 
-
         rec.loop = !loop;
-    })()
+    })();
+}
+
+async function sendCode(code) {
+    if (!code) return false;
+    try {
+        const response = await fetch('http://localhost:3000/api/compile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cppCode: code })
+        });
+        const compiled = await response.json();
+        return compiled;
+    } catch (error) {
+        console.error("Ошибка сети:", error);
+        return { error: "Бэкенд недоступен" };
+    }
 }
 
 function createInstance() {
     let id = `Tab${createInstance.count++}`;
-
     let globDiv = document.createElement('div');
     globDiv.id = id;
     globDiv.classList.add('centerDiv');
@@ -300,21 +357,16 @@ function createInstance() {
 
     let red = document.createElement('span');
     red.className = `mac-btn mac-red`;
-    red.onclick = function () {
-        globDiv.remove();
-    }
+    red.onclick = function () { remover(id); } // Вызов плавного удаления
 
     let yellow = document.createElement('span');
     yellow.className = `mac-btn mac-yellow`;
-    yellow.onclick = function () {
-        svernut(id);
-    }
+    yellow.onclick = function () { svernut(id); }
+
     buttonsGroup.appendChild(red);
     buttonsGroup.appendChild(yellow);
-    cache[id] = {
-        loop: false,
-        reference: globDiv,
-    }
+
+    cache[id] = { loop: false, reference: globDiv }
     globDiv.appendChild(buttonsGroup);
     return globDiv;
 }
@@ -322,46 +374,23 @@ function createInstance() {
 createInstance.count = 0;
 
 function openTab(typeOfTab) {
-
     let name;
     let div = createInstance();
     switch (typeOfTab) {
         case 'Wiki': {
             name = 'Recursion Wiki';
             let p = Array.from({length: 2}, () => document.createElement('p'));
-            const strs = [
-                "Ռեկուրսիան իրենից ներկայացնում է ցանկացած օբյեկտի, երևույթի կամ գործընթացի սահմանման այնպիսի մեթոդ, որի դեպքում տվյալ օբյեկտը նկարագրվում է հենց իր միջոցով։ Սա մի եզակի իրավիճակ է, երբ համակարգի կառուցվածքային ամբողջականությունը ենթադրում է հենց նույնատիպ օբյեկտի առկայություն իր իսկ ներսում՝ ավելի փոքր մասշտաբով կամ պարզեցված տեսքով։ Ըստ էության, մենք գործ ունենք ինքնանմանության սկզբունքի հետ, որտեղ գործընթացի յուրաքանչյուր քայլ հղում է կատարում նախորդին կամ հաջորդին՝ ստեղծելով տրամաբանական մի շղթա, որտեղ ամբողջը բաղկացած է իր իսկ պատճեններից:",
-                "Ռեկուրսիայի հասկացությունը հիմնարար դերակատարում ունի մարդկային գիտելիքների ամենատարբեր բնագավառներում՝ սկսած լեզվաբանական կառուցվածքների վերլուծությունից, որտեղ նախադասությունները կարող են ներառել այլ նախադասություններ, մինչև ֆորմալ տրամաբանություն և փիլիսոփայություն։ Սակայն իր առավելագույն գործնական և տեսական արժեքը ռեկուրսիան ստանում է մաթեմատիկական գիտություններում և համակարգչային ճարտարագիտության մեջ։ Ծրագրավորման մեջ այն հանդիսանում է հզորագույն գործիք, որը թույլ է տալիս բարդ խնդիրները տրոհել ավելի պարզ, նույնատիպ ենթախնդիրների՝ ապահովելով կոդի էլեգանտությունն ու ալգորիթմական լուծումների արդյունավետությունը հատկապես տվյալների կառուցվածքների հետ աշխատելիս։"
-            ]
-            for (let i = 0; i < strs.length; i++) {
-                console.log(strs[i]);
-                p[i].textContent = strs[i];
-            }
+            const strs = ["Ռեկուրսիան իրենից ներկայացնում է ցանկացած օբյեկտի, երևույթի կամ գործընթացի սահմանման այնպիսի մեթոդ, որի դեպքում տվյալ օբյեկտը նկարագրվում է հենց իր միջոցով։ Սա մի եզակի իրավիճակ է, երբ համակարգի կառուցվածքային ամբողջականությունը ենթադրում է հենց նույնատիպ օբյեկտի առկայություն իր իսկ ներսում՝ ավելի փոքր մասշտաբով կամ պարզեցված տեսքով։ Ըստ էության, մենք գործ ունենք ինքնանմանության սկզբունքի հետ, որտեղ գործընթացի յուրաքանչյուր քայլ հղում է կատարում նախորդին կամ հաջորդին՝ ստեղծելով տրամաբանական մի շղթա, որտեղ ամբողջը բաղկացած է իր իսկ պատճեններից:", "Ռեկուրսիայի հասկացությունը հիմնարար դերակատարում ունի մարդկային գիտելիքների ամենատարբեր բնագավառներում՝ սկսած լեզվաբանական կառուցվածքների վերլուծությունից, որտեղ նախադասությունները կարող են ներառել այլ նախադասություններ, մինչև ֆորմալ տրամաբանություն և փիլիսոփայություն։ Սակայն իր առավելագույն գործնական և տեսական արժեքը ռեկուրսիան ստանում է մաթեմատիկական գիտություններում և համակարգչային ճարտարագիտության մեջ։ Ծրագրավորման մեջ այն հանդիսանում է հզորագույն գործիք, որը թույլ է տալիս բարդ խնդիրները տրոհել ավելի պարզ, նույնատիպ ենթախնդիրների՝ ապահովելով կոդի էլեգանտությունն ու ալգորիթմական լուծումների արդյունավետությունը հատկապես տվյալների կառուցվածքների հետ աշխատելիս։"]
+            for (let i = 0; i < strs.length; i++) p[i].textContent = strs[i];
+
             let pathOfImg = ['./images/FibSeq.jpg', './images/FibEx.jpg'];
             let img = Array.from({length: 2}, () => document.createElement('img'));
-
             let div1 = document.createElement('div');
             div1.classList.add('divContent');
-            div1.style.cssText = `
-    width: 90%;
-    height: 80%;
-    display: flex;
-    margin:0;
-    flex-direction: column; /* Հիմնական ուղղությունը՝ ներքև */
-    justify-content: flex-start;
-    align-items: center;
-    gap: 15px; /* Տարածություն էլեմենտների միջև */
-    overflow-y: auto; /* Եթե տեքստը շատ լինի, սքրոլ լինի */
-`;
+            div1.style.cssText = `width: 90%; height: 80%; display: flex; margin:0; flex-direction: column; justify-content: flex-start; align-items: center; gap: 15px; overflow-y: auto;`;
 
             let imgContainer = document.createElement('div');
-            imgContainer.style.cssText = `
-    display: flex;
-    flex-direction: row; /* Նկարները՝ իրար կողք */
-    justify-content: center;
-    gap: 10px; /* Նկարների միջև հեռավորություն */
-    width: 100%;
-`;
+            imgContainer.style.cssText = `display: flex; flex-direction: row; justify-content: center; gap: 10px; width: 100%;`;
 
             img.forEach((element, index) => {
                 element.src = pathOfImg[index];
@@ -374,33 +403,19 @@ function openTab(typeOfTab) {
             div1.appendChild(p[0]);
             div1.appendChild(imgContainer);
             div1.appendChild(p[1]);
-
             div.appendChild(div1);
             break;
         }
         case 'Examples': {
             name = 'Recursion Examples';
-            let imgPath = './images/FibPhoto.jpg';
             let img = document.createElement('img');
             img.src = './images/FibPhoto.jpg';
-            img.style.cssText = `
-                max-width:60%;
-                max-height:70%;
-            `
+            img.style.cssText = `max-width:60%; max-height:70%;`
             let p = document.createElement('p');
-            p.style.cssText = `
-                font-size:22.5px;
-            `
+            p.style.cssText = `font-size:22.5px;`
             p.textContent = "Այստեղ բերված են օրինակներ ինչպես է ռեկուրսիայով կառուցված բնությունը, այստեղ կարող ենք նկատել, որ այս ամենը հիշեցնում է ֆիբոնաչիի հաջորդականությունը բնության մեջ և դա ճիշտ նկատումն է քանի որ Ֆիբոնաչին ստեղծել է իր հաջորդականությունը հարյուրավոր տարիներ առաջ և դրա հիման վրա ստեղծվել են ռեկուրենտ ֆունկցիաներ և ռեկուրսիայի գաղափարը";
             let div1 = document.createElement('div');
-            div1.style.cssText = `
-                width: 90%;
-                height: 80%;
-                display:flex;
-                flex-direction: row;
-                justify-content: center;
-                align-items: center;
-            `
+            div1.style.cssText = `width: 90%; height: 80%; display:flex; flex-direction: row; justify-content: center; align-items: center;`
             div1.appendChild(img);
             div1.appendChild(p);
             div.appendChild(div1);
@@ -408,65 +423,359 @@ function openTab(typeOfTab) {
         }
         case 'Cybersecurity': {
             name = 'Using Recursion In Cybersecurity';
-            let imgPath = ['./images/CBRec.jpg','./images/CBRec2.jpg'];
+            let imgPath = ['./images/CBRec.jpg', './images/CBRec2.jpg'];
             let img = document.createElement('img');
             let img1 = document.createElement('img');
-            [img.src,img1.src] = imgPath;
-            let p = Array.from({length:2},function () {
-                return document.createElement('p');
-            })
-            img.style.cssText = `
-                max-width:60%;
-                max-height:70%;
-            `
-            img1.style.cssText = `
-                max-width:65%;
-                max-height:70%;
-            `
-            const strs = [
-                "Ինչպես են ռեկուրսիան օգտագործում\
-                ծրագրավորման և կիբեռանվտանգության մեջ?",
-                "Ահա մի օրինակ, նկարում պատկերված է  համակարգչի թղթապանակ պարզագույն ծառ, յուրաքանչյուր\ \
-                թղթապանակ գտնվում են ուրիշ թղթապանակներ, որոնք պարունակում տարբեր ֆայլեր։ Ռեկուրսիան մեզ հնարավորություն են տալիս \"ճամփորդել\" թղթապանակների մեջ, այսինքն գրելով ռեկուրսիայի հիման վրա համապատասխան ծրագիր այն կարող է մտնել այդ թղթապանակներ, ուսումնասիրել ֆայլային պարունակությունը, ետ գնալ և ուրիշ թղթապանակներ տեղափոխվել մինչև չգտնի մեր նշված ինֆորմացիայով ֆայլը։\
-                ինչպես խոսվել է ռեկուրսինա քայլ առ քայլ է կատարում իր գործողությունները և արդյունք ստանալուց հետո քայլ առ քայլ ետ գալիս,\
-                սա շատ հարմար յուրահատկություն է, որը կարելի է օգտագործել այսպիսի դեպքերի համար"
-            ]
-            for(let i = 0;i < 2;++i){
-                p[i].textContent = strs[i];
-            }
+            [img.src, img1.src] = imgPath;
+            let p = Array.from({length: 2}, () => document.createElement('p'))
+            img.style.cssText = `max-width:60%; max-height:70%;`
+            img1.style.cssText = `max-width:65%; max-height:70%;`
+            const strs = ["Ինչպես են ռեկուրսիան օգտագործում ծրագրավորման և կիբեռանվտանգության մեջ?", "Ահա մի օրինակ, նկարում պատկերված է համակարգչի թղթապանակ պարզագույն ծառ, յուրաքանչյուր թղթապանակ գտնվում են ուրիշ թղթապանակներ, որոնք պարունակում տարբեր ֆայլեր։ Ռեկուրսիան մեզ հնարավորություն են տալիս \"ճամփորդել\" թղթապանակների մեջ, այսինքն գրելով ռեկուրսիայի հիման վրա համապատասխան ծրագիր այն կարող է մտնել այդ թղթապանակներ, ուսումնասիրել ֆայլային պարունակությունը, ետ գնալ և ուրիշ թղթապանակներ տեղափոխվել մինչև չգտնի մեր նշված ինֆորմացիայով ֆայլը։ ինչպես խոսվել է ռեկուրսինա քայլ առ քայլ է կատարում իր գործողությունները և արդյունք ստանալուց հետո քայլ առ քայլ ետ գալիս, սա շատ հարմար յուրահատկություն է, որը կարելի է օգտագործել այսպիսի դեպքերի համար"]
+            for (let i = 0; i < 2; ++i) p[i].textContent = strs[i];
+
             let div1 = document.createElement('div');
-            div1.style.cssText = `
-                position:absolute;
-                width:90%;
-                height:80%;
-                display:flex;
-                flex-direction: column;
-                justify-content: center;
-            `
+            div1.style.cssText = `position:absolute; width:90%; height:80%; display:flex; flex-direction: column; justify-content: center;`
             let div2 = document.createElement('div');
-            div2.style.cssText = `
-                display:flex;
-                flex-direction: row;
-                gap:10px;
-            `
+            div2.style.cssText = `display:flex; flex-direction: row; gap:10px;`
             div2.appendChild(img);
             div2.appendChild(img1);
             div1.appendChild(div2);
-            for(let i of p){
-                div1.appendChild(i);
-            }
+            for (let i of p) div1.appendChild(i);
             div.appendChild(div1);
             break;
         }
-        case "Compiler":
+        case "Compiler": {
             name = 'C++ Compiler';
+            let contentDiv = document.createElement('div');
+            contentDiv.classList.add('divContent');
+            contentDiv.style.cssText = `width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;`;
+
+            let compileBtn = document.createElement('button');
+            compileBtn.innerHTML = 'Run <span style="font-size: 1.2em; vertical-align: middle;">▶</span>';
+            compileBtn.style.cssText = `position: fixed; right: 5.5px; bottom: 1.5%; width: 8%; height: 91%; padding: 0px 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px) saturate(150%); -webkit-backdrop-filter: blur(25px) saturate(150%); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -1px 1px rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 24px; font-family: "Samsung Sharp Sans", sans-serif; font-weight: bold; cursor: pointer; letter-spacing: 0.5px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 10; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);`;
+
+            compileBtn.onmouseover = () => { compileBtn.style.background = 'rgba(255, 255, 255, 0.08)'; compileBtn.style.transform = 'translateY(-2px)'; compileBtn.style.boxShadow = `0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6), inset 0 -1px 1px rgba(255, 255, 255, 0.1)`; compileBtn.style.borderColor = 'rgba(255, 255, 255, 0.3)'; };
+            compileBtn.onmouseout = () => { compileBtn.style.background = 'rgba(255, 255, 255, 0.03)'; compileBtn.style.transform = 'translateY(0px)'; compileBtn.style.boxShadow = `0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -1px 1px rgba(255, 255, 255, 0.05)`; compileBtn.style.borderColor = 'rgba(255, 255, 255, 0.15)'; };
+            compileBtn.onmousedown = () => { compileBtn.style.transform = 'translateY(1px) scale(0.98)'; compileBtn.style.background = 'rgba(255, 255, 255, 0.02)'; compileBtn.style.boxShadow = `0 5px 15px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2)`; };
+            compileBtn.onmouseup = () => { compileBtn.style.transform = 'translateY(-2px) scale(1)'; compileBtn.style.background = 'rgba(255, 255, 255, 0.08)'; };
+
+            let mainContainer = document.createElement('div');
+            mainContainer.style.cssText = `display: flex; flex-direction: column; width: 90%; height: 91%; position: fixed; top: 60px; left: 1%; border-radius: 27px; box-shadow: rgba(0, 0, 0, 0.5) 0px 20px 50px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);`;
+
+            let editorWrapper = document.createElement('div');
+            editorWrapper.style.cssText = `display: flex; flex: 7; background: rgba(30, 30, 30, 0.65); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; font-size: 13px; line-height: 1.6; border-bottom: 1px solid rgba(255, 255, 255, 0.1);`;
+
+            let lineNumbers = document.createElement('div');
+            lineNumbers.style.cssText = `width: 45px; background-color: rgba(255, 255, 255, 0.03); color: #5c6370; text-align: right; padding: 15px 10px 10px 0; box-sizing: border-box; border-right: 1px solid rgba(255, 255, 255, 0.05); user-select: none; overflow: hidden; font-family: inherit;`;
+            lineNumbers.innerText = '1';
+
+            let textarea = document.createElement('textarea');
+            textarea.setAttribute('spellcheck', 'false');
+            textarea.style.cssText = `flex: 1; background-color: transparent; color: #e6e6e6; border: none; outline: none; padding: 15px; resize: none; white-space: pre; overflow: auto; font-family: inherit; font-size: inherit; line-height: inherit; caret-color: #528bff;`;
+            textarea.value = '#include <iostream>\n\nint main() {\n    // Write your code here\n    std::cout << "Hello 94th School!";\n    return 0;\n}';
+
+            const updateLines = () => {
+                const numberOfLines = textarea.value.split('\n').length;
+                lineNumbers.innerHTML = Array(numberOfLines).fill(0).map((_, i) => i + 1).join('<br>');
+            };
+
+            const syncScroll = () => { lineNumbers.scrollTop = textarea.scrollTop; };
+            textarea.addEventListener('input', updateLines);
+            textarea.addEventListener('scroll', syncScroll);
+            setTimeout(updateLines, 0);
+
+            textarea.addEventListener('keydown', function (e) {
+                if (e.key == 'Tab') {
+                    e.preventDefault();
+                    let start = this.selectionStart;
+                    let end = this.selectionEnd;
+                    this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 4;
+                    updateLines();
+                }
+            });
+
+            let terminalWrapper = document.createElement('div');
+            terminalWrapper.style.cssText = `flex: 3; display: flex; flex-direction: column; background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; padding: 10px 15px;`;
+
+            let terminalHeader = document.createElement('div');
+            terminalHeader.style.cssText = `color: #858585; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between;`;
+            terminalHeader.innerHTML = `<span>Terminal Output</span><span id="termStatus">Ready</span>`;
+
+            let terminalOutput = document.createElement('div');
+            terminalOutput.style.cssText = `color: #4CAF50; font-size: 13px; flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;`;
+            terminalOutput.innerText = ">_ Awaiting compilation...";
+
+            terminalWrapper.appendChild(terminalHeader);
+            terminalWrapper.appendChild(terminalOutput);
+            editorWrapper.appendChild(lineNumbers);
+            editorWrapper.appendChild(textarea);
+            mainContainer.appendChild(editorWrapper);
+            mainContainer.appendChild(terminalWrapper);
+
+            compileBtn.onclick = async function () {
+                let statusSpan = terminalHeader.querySelector('#termStatus');
+                terminalOutput.innerText = '';
+                compileBtn.innerHTML = 'WAIT';
+                compileBtn.style.opacity = '0.5';
+                statusSpan.innerText = 'Compiling...';
+                statusSpan.style.color = '#FFA500';
+                terminalOutput.style.color = '#A9A9A9';
+                terminalOutput.innerText = ">_ Clearing console and compiling...\n";
+
+                try {
+                    const res = await sendCode(textarea.value);
+                    terminalOutput.innerText = '';
+                    if (res.status === 'success') {
+                        statusSpan.innerText = 'Success';
+                        statusSpan.style.color = '#4CAF50';
+                        terminalOutput.style.color = '#e6e6e6';
+                        terminalOutput.innerText = res.result;
+                    } else {
+                        statusSpan.innerText = 'Error';
+                        statusSpan.style.color = '#F44336';
+                        terminalOutput.style.color = '#FF6B6B';
+                        terminalOutput.innerText = res.result || res.error;
+                    }
+                } catch (err) {
+                    statusSpan.innerText = 'Failed';
+                    statusSpan.style.color = '#F44336';
+                    terminalOutput.style.color = '#FF6B6B';
+                    terminalOutput.innerText = ">_ Connection error. Is the Node.js server running?";
+                } finally {
+                    compileBtn.innerHTML = 'Run <span style="font-size: 1.2em; vertical-align: middle;">▶</span>';
+                    compileBtn.style.opacity = '1';
+                }
+            };
+
+            contentDiv.appendChild(mainContainer);
+            contentDiv.appendChild(compileBtn);
+            div.appendChild(contentDiv);
             break;
-        case "AI":
+        }
+        case "AI": {
             name = 'Ask to AI';
+
+            let contentDiv = document.createElement('div');
+            contentDiv.classList.add('divContent');
+            contentDiv.style.cssText = `
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                position: relative;
+            `;
+
+            const displayMessage = (text, isUser) => {
+                let msg = document.createElement('div');
+
+                let baseStyle = `
+                    max-width: 75%;
+                    padding: 14px 20px;
+                    border-radius: 22px;
+                    font-family: "Samsung Sharp Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+                    font-size: 14.5px;
+                    line-height: 1.5;
+                    margin-bottom: 12px;
+                    animation: windowOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    word-wrap: break-word;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                `;
+
+                if (isUser) {
+                    msg.style.cssText = baseStyle + `
+                        align-self: flex-end; 
+                        background: linear-gradient(135deg, #0a84ff 0%, #0058C9 100%); 
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-bottom-right-radius: 6px; /* Хвостик как в iMessage */
+                        color: #ffffff;
+                        text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+                    `;
+                    msg.innerText = text;
+                } else {
+                    msg.style.cssText = baseStyle + `
+                        align-self: flex-start; 
+                        background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%); 
+                        backdrop-filter: blur(25px) saturate(180%);
+                        -webkit-backdrop-filter: blur(25px) saturate(180%);
+                        border: 1px solid rgba(255,255,255,0.2);
+                        border-bottom: 1px solid rgba(255,255,255,0.05); /* Блик по краям */
+                        border-bottom-left-radius: 6px; /* Хвостик как в iMessage */
+                        color: #f5f5f7;
+                    `;
+
+                    let formattedText = text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: white; font-weight: 800;">$1</strong>')
+                        .replace(/```(.*?)\n([\s\S]*?)```/g, (match, lang, code) => {
+                            return `<div style="
+                                background: rgba(0, 0, 0, 0.4); 
+                                border-radius: 12px; 
+                                padding: 12px; 
+                                margin: 10px 0; 
+                                font-family: Menlo, Monaco, monospace; 
+                                border: 1px solid rgba(255,255,255,0.1);
+                                box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+                                overflow-x: auto;
+                            "><span style="color:#a1a1aa; font-size:10px; text-transform:uppercase; font-family: sans-serif; font-weight:bold; letter-spacing: 1px;">${lang || 'code'}</span><br><code style="color: #e6e6e6; font-size: 13.5px;">${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></div>`;
+                        })
+                        .replace(/`(.*?)`/g, '<code style="background: rgba(255,255,255,0.15); padding: 3px 6px; border-radius: 6px; color: #ff9f0a; font-family: Menlo, monospace;">$1</code>')
+                        .replace(/\n/g, '<br>');
+
+                    msg.innerHTML = formattedText;
+                }
+
+                chatArea.appendChild(msg);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            };
+
+            let chatArea = document.createElement('div');
+            chatArea.style.cssText = `
+                left: 2%;
+                position: fixed;
+                width: 92%;
+                height: 70%;
+                margin-top: 40px;
+                overflow-y: auto;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                mask-image: linear-gradient(transparent 0%, black 10%, black 90%, transparent 100%);
+                -webkit-mask-image: linear-gradient(transparent 0%, black 10%, black 90%, transparent 100%);
+            `;
+
+            let inputWrapper = document.createElement('div');
+            inputWrapper.style.cssText = `
+                position: fixed;
+                width: 80%;
+                height: 55px;
+                right: 9%;
+                bottom: 5%;
+                display: flex;
+                align-items: center;
+                padding: 0px 15px;
+                /* Эффект чистого мак-стекла */
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
+                backdrop-filter: blur(35px) saturate(200%);
+                -webkit-backdrop-filter: blur(35px) saturate(200%);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Объем снизу */
+                border-right: 1px solid rgba(255, 255, 255, 0.05); /* Объем справа */
+                border-radius: 28px; /* Идеальное скругление */
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            `;
+
+            let textArea = document.createElement('textarea');
+            textArea.placeholder = 'Ask anything to Gemini...';
+            textArea.style.cssText = `
+                flex: 1; 
+                background: transparent; 
+                border: 0; 
+                outline: none; 
+                color: #ffffff;
+                font-family: "Samsung Sharp Sans", -apple-system, sans-serif; 
+                font-weight: 500;
+                font-size: 15px; 
+                resize: none; 
+                padding: 18px 5px; 
+                height: 20px;
+                caret-color: #0a84ff; /* Синяя каретка мака */
+            `;
+
+            let sendBtn = document.createElement('button');
+            sendBtn.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                    <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+            `;
+            sendBtn.id = "SendToAi";
+            sendBtn.style.cssText = `
+                width: 36px; 
+                height: 36px; 
+                border-radius: 50%; 
+                border: none;
+                background: linear-gradient(135deg, #0a84ff 0%, #0056b3 100%);
+                box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+                cursor: pointer; 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+                margin-left: 10px;
+            `;
+
+            sendBtn.onmouseover = () => sendBtn.style.transform = 'scale(1.05)';
+            sendBtn.onmouseout = () => sendBtn.style.transform = 'scale(1)';
+            sendBtn.onmousedown = () => sendBtn.style.transform = 'scale(0.92)';
+            sendBtn.onmouseup = () => sendBtn.style.transform = 'scale(1.05)';
+
+            sendBtn.onclick = async () => {
+                let button = document.getElementById('SendToAi');
+                console.log(button)
+                const text = textArea.value.trim();
+                if (!text) return;
+
+                displayMessage(text, true);
+                textArea.value = '';
+
+                let tempId = "loader-" + Date.now();
+                let loadingMsg = document.createElement('div');
+                loadingMsg.id = tempId;
+                // Анимация пульсации для загрузки
+                loadingMsg.innerHTML = '<span style="animation: opacity 1.5s infinite;">Gemini is thinking...</span>';
+                loadingMsg.style.cssText = "align-self: flex-start; color: rgba(255,255,255,0.5); font-size: 12px; margin-left: 15px; font-style: italic;";
+                chatArea.appendChild(loadingMsg);
+                chatArea.scrollTop = chatArea.scrollHeight;
+
+                try {
+
+                    if(button) button.style.display = 'none';
+                    const response = await fetch('http://localhost:3000/api/aiResponse', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question: text })
+                    });
+                    const data = await response.json();
+
+                    document.getElementById(tempId).remove();
+                    button.style.display = 'block'
+                    if (data.status === 'success') {
+                        displayMessage(data.result, false);
+                    } else {
+                        displayMessage("❌ Системная ошибка сервера:", false);
+                    }
+
+                } catch (err) {
+                    if(document.getElementById(tempId)) document.getElementById(tempId).remove();
+                    displayMessage("⚠️ Бэкенд не отвечает. Проверь консоль сервера.", false);
+                }
+            };
+
+            textArea.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendBtn.click();
+                }
+            });
+
+            inputWrapper.appendChild(textArea);
+            inputWrapper.appendChild(sendBtn);
+            contentDiv.appendChild(chatArea);
+            contentDiv.appendChild(inputWrapper);
+            div.appendChild(contentDiv);
             break;
+        }
     }
-    if(Stack[1].size) return;
-    if (Stack[1].has(name)) return;
+
+    if (Stack[1].size || Stack[1].has(name)) {
+        div.remove();
+        delete cache[div.id];
+        return;
+    }
+
     if (Stack[0].has(name)) {
         let existingTab = Stack[0].get(name);
         Stack[0].delete(name);
@@ -477,39 +786,44 @@ function openTab(typeOfTab) {
         existingTab.classList.toggle('minimized');
         existingTab.lastChild.remove();
 
+        existingTab.classList.remove('minimizing', 'closing');
+        existingTab.classList.add('restoring');
+        setTimeout(() => existingTab.classList.remove('restoring'), 500);
+
         Array.from(existingTab.children).forEach(child => {
             if (!child.classList.contains('mac-controls')) {
                 child.style.display = 'flex';
             }
         });
 
-        existingTab.firstElementChild.innerHTML = `<div class='mac-controls'> 
+        existingTab.firstElementChild.innerHTML = ` 
             <span class="mac-btn mac-red"></span>
             <span class="mac-btn mac-yellow"></span>
-        </div>`
+        `;
 
         cache[existingTab.id].loop = false;
 
         const Queue = document.querySelector('.queue');
-        Queue.style.width = `${Queue.children.length * 75}px`;
+        if (Queue) Queue.style.width = `${Queue.children.length * 75}px`;
+
         let button = existingTab.querySelector('.mac-red');
         let button1 = existingTab.querySelector('.mac-yellow');
         button1.onclick = () => svernut(existingTab.id);
         button.onclick = () => remover(existingTab.id);
+
         Stack[1].set(name, existingTab);
         return;
     }
+
     let h1 = document.createElement('h1');
-    h1.textContent = name;
-    h1.style = `
-        position: absolute;
-        top:5px;
-        left:${Math.floor([...Stack[1]][0] / 2)}px;
-    `
-    div.psevdoName = name;
+    h1.textContent = name || 'New Tab';
+    h1.style.cssText = `position: absolute; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; color: #391313; font-family: "Samsung Sharp Sans", sans-serif; font-weight: bold;`;
+
+    div.psevdoName = name || 'Unknown';
     div.appendChild(h1);
     document.body.appendChild(div);
     Stack[1].set(div.psevdoName, div);
+
     let redButton = div.querySelector('.mac-red');
     if (redButton) {
         redButton.onclick = () => remover(div.id);
