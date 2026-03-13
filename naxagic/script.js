@@ -15,6 +15,14 @@ style.textContent = `
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+    .no-scrollbar::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 
     /* 🔥 АНИМАЦИЯ ОТКРЫТИЯ ОКНА (Scale up + Fade in) */
     @keyframes windowOpen {
