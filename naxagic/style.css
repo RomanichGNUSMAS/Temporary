@@ -7,7 +7,6 @@
     font-style: normal;  /* Стиль (normal, italic) */
 }
 
-/* Добавь это внутрь style.textContent */
 .no-scrollbar::-webkit-scrollbar {
     width: 0px;
     background: transparent;

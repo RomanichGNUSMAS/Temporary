@@ -500,7 +500,7 @@ function openTab(typeOfTab) {
             compileBtn.onmouseup = () => { compileBtn.style.transform = 'translateY(-2px) scale(1)'; compileBtn.style.background = 'rgba(255, 255, 255, 0.08)'; };
 
             let mainContainer = document.createElement('div');
-            mainContainer.style.cssText = `display: flex; flex-direction: column; width: 90%; height: 91%; position: fixed; top: 60px; left: 1%; border-radius: 27px; box-shadow: rgba(0, 0, 0, 0.5) 0px 20px 50px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);`;
+            mainContainer.style.cssText = `display: flex; flex-direction: column; width: 90%; height: 91%; position: fixed; top: 50px; left: 1%; border-radius: 27px; box-shadow: rgba(0, 0, 0, 0.5) 0px 20px 50px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);`;
 
             let editorWrapper = document.createElement('div');
             editorWrapper.style.cssText = `display: flex; flex: 7; background: rgba(30, 30, 30, 0.65); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; font-size: 13px; line-height: 1.6; border-bottom: 1px solid rgba(255, 255, 255, 0.1);`;
@@ -764,7 +764,7 @@ function openTab(typeOfTab) {
                 let tempId = "loader-" + Date.now();
                 let loadingMsg = document.createElement('div');
                 loadingMsg.id = tempId;
-                // Анимация пульсации для загрузки
+
                 loadingMsg.innerHTML = '<span style="animation: opacity 1.5s infinite;">Gemini is thinking...</span>';
                 loadingMsg.style.cssText = "align-self: flex-start; color: rgba(255,255,255,0.5); font-size: 12px; margin-left: 15px; font-style: italic;";
                 chatArea.appendChild(loadingMsg);
