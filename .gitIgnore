@@ -1,6 +1,8 @@
 naxagic/backend/node_modules
 
 
+node_modules/
+
 
 #env
 naxagic/backend/API.env
