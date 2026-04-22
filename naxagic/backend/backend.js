@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
+const os = require('os');
+const crypto = require('crypto');
+const { spawn } = require('child_process');
 const dotenv = require('dotenv')
 dotenv.config({ path:path.join(__dirname,'API.env')});
 
@@ -21,31 +23,83 @@ app.get('/', (req, res) => {
 app.post('/api/compile', (req, res) => {
     const { cppCode } = req.body;
 
-    const filePath = path.join(__dirname, 'temp.cpp');
-    const outPath = path.join(__dirname, 'temp.out');
+    if (typeof cppCode !== 'string' || cppCode.trim().length === 0) {
+        return res.status(400).json({ status: 'error', result: 'cppCode is required' });
+    }
+Ё
 
-    fs.writeFileSync(filePath, cppCode);
+    const MAX_CODE_CHARS = 100_000;
+    if (cppCode.length > MAX_CODE_CHARS) {
+        return res.status(413).json({ status: 'error', result: `Code too large (>${MAX_CODE_CHARS} chars)` });
+    }
 
-    const compileAndRun = `g++ "${filePath}" -o "${outPath}" && "${outPath}"`;
+    const id = crypto.randomBytes(8).toString('hex');
+    const outPath = path.join(os.tmpdir(), `naxagic_${id}.exe`);
 
-    exec(compileAndRun, (error, stdout, stderr) => {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    const compileArgs = [
+        '-x', 'c++',
+        '-std=c++17',
+        '-O2',
+        '-pipe',
+        '-o', outPath,
+        '-', // stdin
+    ];
+
+    const compiler = spawn('g++', compileArgs, { windowsHide: true });
+
+    let compileStdout = '';
+    let compileStderr = '';
+
+    compiler.stdout.on('data', (d) => { compileStdout += d.toString(); });
+    compiler.stderr.on('data', (d) => { compileStderr += d.toString(); });
+    compiler.on('error', (err) => {
         if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        return res.status(500).json({ status: 'error', result: `Failed to start g++: ${err.message}` });
+    });
 
-        if (error) {
-            console.error(`🚨 Ошибка выполнения: ${error.message}`);
-            return res.json({ 
-                status: 'error', 
-                result: stderr || error.message 
-            });
+    compiler.stdin.write(cppCode);
+    compiler.stdin.end();
+
+    compiler.on('close', (code) => {
+        if (code !== 0) {
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+            return res.json({ status: 'error', result: compileStderr || `Compilation failed (code ${code})` });
         }
 
-        if (stderr) {
-            console.warn(`⚠️ Warning компилятора: ${stderr}`);
-        }
+        const RUN_TIMEOUT_MS = 2000;
+        const runner = spawn(outPath, [], { windowsHide: true });
 
-        console.log(`✅ Результат: ${stdout}`);
-        res.json({ status: 'success', result: stdout });
+        let runStdout = '';
+        let runStderr = '';
+        let killedByTimeout = false;
+
+        const t = setTimeout(() => {
+            killedByTimeout = true;
+            runner.kill('SIGKILL');
+        }, RUN_TIMEOUT_MS);
+
+        runner.stdout.on('data', (d) => { runStdout += d.toString(); });
+        runner.stderr.on('data', (d) => { runStderr += d.toString(); });
+        runner.on('error', (err) => {
+            clearTimeout(t);
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+            return res.status(500).json({ status: 'error', result: `Failed to run program: ${err.message}` });
+        });
+
+        runner.on('close', (runCode) => {
+            clearTimeout(t);
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+
+            if (killedByTimeout) {
+                return res.json({ status: 'error', result: `Time limit exceeded (${RUN_TIMEOUT_MS}ms)` });
+            }
+
+            if (runCode !== 0) {
+                return res.json({ status: 'error', result: runStderr || `Runtime error (code ${runCode})` });
+            }
+
+            return res.json({ status: 'success', result: runStdout });
+        });
     });
 });
 
