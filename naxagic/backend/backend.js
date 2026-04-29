@@ -33,16 +33,16 @@ app.post('/api/compile', async (req, res) => {
 
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15_000); // 15 сек общий таймаут
+        const timeout = setTimeout(() => controller.abort(), 15_000); 
 
         const response = await fetch('https://wandbox.org/api/compile.json', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,
             body: JSON.stringify({
-                compiler: 'gcc-head',       // последний GCC
+                compiler: 'gcc-head',       
                 code: cppCode,
-                options: 'warning,c++17',   // флаги компилятора
+                options: 'warning,c++17',  
                 'compiler-option-raw': '-O2',
                 stdin: '',
             }),
@@ -56,9 +56,7 @@ app.post('/api/compile', async (req, res) => {
 
         const data = await response.json();
 
-        // status — "0" успех, иначе ошибка компиляции/рантайма
         if (data.status !== '0') {
-            // compiler_error — ошибки g++, program_error — stderr программы
             const errMsg = data.compiler_error || data.program_error || `Exit code: ${data.status}`;
             return res.json({ status: 'error', result: errMsg });
         }
