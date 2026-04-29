@@ -243,7 +243,6 @@ function executeSvernutLogic(rc, rec, reference) {
 
             span.onclick = () => {
                 if (reference !== recomenders.reference) {
-                    // ИСПОЛЬЗУЕМ НАШУ УМНУЮ ФУНКЦИЮ REMOVER (Исправление утечки памяти)
                     remover(reference.id);
                     return;
                 }
@@ -341,7 +340,7 @@ function executeSvernutLogic(rc, rec, reference) {
 async function sendCode(code) {
     if (!code) return false;
     try {
-        const response = await fetch('http://localhost:3000/api/compile', {
+        const response = await fetch('/api/compile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cppCode: code })
@@ -773,7 +772,7 @@ function openTab(typeOfTab) {
                 try {
 
                     if(button) button.style.display = 'none';
-                    const response = await fetch('http://localhost:3000/api/aiResponse', {
+                    const response = await fetch('/api/aiResponse', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ question: text })
