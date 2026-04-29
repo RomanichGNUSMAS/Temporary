@@ -19,88 +19,58 @@ app.use(express.static(path.join(__dirname, '../')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
 });
-
-app.post('/api/compile', (req, res) => {
+app.post('/api/compile', async (req, res) => {
     const { cppCode } = req.body;
 
     if (typeof cppCode !== 'string' || cppCode.trim().length === 0) {
         return res.status(400).json({ status: 'error', result: 'cppCode is required' });
     }
-Ё
 
     const MAX_CODE_CHARS = 100_000;
     if (cppCode.length > MAX_CODE_CHARS) {
         return res.status(413).json({ status: 'error', result: `Code too large (>${MAX_CODE_CHARS} chars)` });
     }
 
-    const id = crypto.randomBytes(8).toString('hex');
-    const outPath = path.join(os.tmpdir(), `naxagic_${id}.exe`);
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15_000); // 15 сек общий таймаут
 
-    const compileArgs = [
-        '-x', 'c++',
-        '-std=c++17',
-        '-O2',
-        '-pipe',
-        '-o', outPath,
-        '-', // stdin
-    ];
+        const response = await fetch('https://wandbox.org/api/compile.json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+                compiler: 'gcc-head',       // последний GCC
+                code: cppCode,
+                options: 'warning,c++17',   // флаги компилятора
+                'compiler-option-raw': '-O2',
+                stdin: '',
+            }),
+        });
 
-    const compiler = spawn('g++', compileArgs, { windowsHide: true });
+        clearTimeout(timeout);
 
-    let compileStdout = '';
-    let compileStderr = '';
-
-    compiler.stdout.on('data', (d) => { compileStdout += d.toString(); });
-    compiler.stderr.on('data', (d) => { compileStderr += d.toString(); });
-    compiler.on('error', (err) => {
-        if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
-        return res.status(500).json({ status: 'error', result: `Failed to start g++: ${err.message}` });
-    });
-
-    compiler.stdin.write(cppCode);
-    compiler.stdin.end();
-
-    compiler.on('close', (code) => {
-        if (code !== 0) {
-            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
-            return res.json({ status: 'error', result: compileStderr || `Compilation failed (code ${code})` });
+        if (!response.ok) {
+            return res.status(502).json({ status: 'error', result: `Wandbox error: ${response.status}` });
         }
 
-        const RUN_TIMEOUT_MS = 2000;
-        const runner = spawn(outPath, [], { windowsHide: true });
+        const data = await response.json();
 
-        let runStdout = '';
-        let runStderr = '';
-        let killedByTimeout = false;
+        // status — "0" успех, иначе ошибка компиляции/рантайма
+        if (data.status !== '0') {
+            // compiler_error — ошибки g++, program_error — stderr программы
+            const errMsg = data.compiler_error || data.program_error || `Exit code: ${data.status}`;
+            return res.json({ status: 'error', result: errMsg });
+        }
 
-        const t = setTimeout(() => {
-            killedByTimeout = true;
-            runner.kill('SIGKILL');
-        }, RUN_TIMEOUT_MS);
+        return res.json({ status: 'success', result: data.program_output || '' });
 
-        runner.stdout.on('data', (d) => { runStdout += d.toString(); });
-        runner.stderr.on('data', (d) => { runStderr += d.toString(); });
-        runner.on('error', (err) => {
-            clearTimeout(t);
-            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
-            return res.status(500).json({ status: 'error', result: `Failed to run program: ${err.message}` });
-        });
-
-        runner.on('close', (runCode) => {
-            clearTimeout(t);
-            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
-
-            if (killedByTimeout) {
-                return res.json({ status: 'error', result: `Time limit exceeded (${RUN_TIMEOUT_MS}ms)` });
-            }
-
-            if (runCode !== 0) {
-                return res.json({ status: 'error', result: runStderr || `Runtime error (code ${runCode})` });
-            }
-
-            return res.json({ status: 'success', result: runStdout });
-        });
-    });
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            return res.status(504).json({ status: 'error', result: 'Wandbox timeout (15s)' });
+        }
+        return res.status(500).json({ status: 'error', result: `Request failed: ${err.message}` });
+    }
 });
 
 app.post('/api/aiResponse', async (req, res) => {
