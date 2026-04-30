@@ -805,7 +805,6 @@ function openTab(typeOfTab) {
 
             sendBtn.onclick = async () => {
                 let button = document.getElementById('SendToAi');
-                console.log(button)
                 const text = textArea.value.trim();
                 if (!text) return;
 

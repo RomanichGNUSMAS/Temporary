@@ -112,12 +112,11 @@ app.post('/api/aiResponse', async (req, res) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "nvidia/nemotron-3-super-120b-a12b:free",
+                model: "openai/gpt-oss-120b:free",
                 messages: [{ role: "user", content: combinedMessage }]
             })
         });
         const data = await response.json();
-        console.log(data);
         if (data.error) return res.status(500).json({ error: "AI սерверը схал верадарцрец" });
 
         if (data.choices?.length > 0) {
