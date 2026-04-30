@@ -4,7 +4,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "node-fetch": "^3.3.2",
-    "serve": "^14.2.6"
+    "serve": "^14.2.6",
+    "ws": "^8.20.0"
   },
   "name": "temporary",
   "version": "1.0.0",
