@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "cors": "^2.8.6",
-    "serve": "^14.2.6"
+    "serve": "^14.2.6",
+    "ws": "^8.20.0"
   },
   "name": "temporary",
   "version": "1.0.0",

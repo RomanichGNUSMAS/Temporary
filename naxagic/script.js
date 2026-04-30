@@ -3,6 +3,7 @@ let recomenders = {
     reference: document.querySelector('.centerDiv'), loop: false
 };
 recomenders.reference.psevdoName = 'Effectivity'
+recomenders.reference.querySelector('.divContent').classList.add('globber')
 
 const style = document.createElement('style');
 style.textContent = `
@@ -78,7 +79,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 const cache = {};
-const Stack = Array.from({length: 3}, () => new Map());
+const Stack = Array.from({ length: 3 }, () => new Map());
 Stack[1].set(recomenders.reference.psevdoName, recomenders.reference);
 
 function restartAnimation(className) {
@@ -185,13 +186,17 @@ function reserveForRecomendations() {
         overflow:hidden;
     `
     cache['recomendations'].reference.classList.toggle('sleepMode');
+    cache['recomendations'].reference.firstElementChild.style.cssText = `
+        display:flex;
+        flex-direction:row;
+    `
     const menu = document.querySelector('.TabMenu');
     menu.style.marginLeft = '0px';
 }
 
 function svernut(rc) {
     const rec = cache[rc] ? cache[rc] : document.getElementById(rc) || recomenders;
-    const {reference, loop} = rec;
+    const { reference, loop } = rec;
 
     if (!loop) {
         reference.classList.remove('restoring');
@@ -337,13 +342,13 @@ function executeSvernutLogic(rc, rec, reference) {
     })();
 }
 
-async function sendCode(code) {
+async function sendCode(code, stdin) {
     if (!code) return false;
     try {
-        const response = await fetch('/api/compile', {
+        const response = await fetch('localhost:3000/api/compile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cppCode: code })
+            body: JSON.stringify({ cppCode: code, stdin: stdin })
         });
         const compiled = await response.json();
         return compiled;
@@ -386,12 +391,12 @@ function openTab(typeOfTab) {
     switch (typeOfTab) {
         case 'Wiki': {
             name = 'Recursion Wiki';
-            let p = Array.from({length: 2}, () => document.createElement('p'));
+            let p = Array.from({ length: 2 }, () => document.createElement('p'));
             const strs = ["Ռեկուրսիան իրենից ներկայացնում է ցանկացած օբյեկտի, երևույթի կամ գործընթացի սահմանման այնպիսի մեթոդ, որի դեպքում տվյալ օբյեկտը նկարագրվում է հենց իր միջոցով։ Սա մի եզակի իրավիճակ է, երբ համակարգի կառուցվածքային ամբողջականությունը ենթադրում է հենց նույնատիպ օբյեկտի առկայություն իր իսկ ներսում՝ ավելի փոքր մասշտաբով կամ պարզեցված տեսքով։ Ըստ էության, մենք գործ ունենք ինքնանմանության սկզբունքի հետ, որտեղ գործընթացի յուրաքանչյուր քայլ հղում է կատարում նախորդին կամ հաջորդին՝ ստեղծելով տրամաբանական մի շղթա, որտեղ ամբողջը բաղկացած է իր իսկ պատճեններից:", "Ռեկուրսիայի հասկացությունը հիմնարար դերակատարում ունի մարդկային գիտելիքների ամենատարբեր բնագավառներում՝ սկսած լեզվաբանական կառուցվածքների վերլուծությունից, որտեղ նախադասությունները կարող են ներառել այլ նախադասություններ, մինչև ֆորմալ տրամաբանություն և փիլիսոփայություն։ Սակայն իր առավելագույն գործնական և տեսական արժեքը ռեկուրսիան ստանում է մաթեմատիկական գիտություններում և համակարգչային ճարտարագիտության մեջ։ Ծրագրավորման մեջ այն հանդիսանում է հզորագույն գործիք, որը թույլ է տալիս բարդ խնդիրները տրոհել ավելի պարզ, նույնատիպ ենթախնդիրների՝ ապահովելով կոդի էլեգանտությունն ու ալգորիթմական լուծումների արդյունավետությունը հատկապես տվյալների կառուցվածքների հետ աշխատելիս։"]
             for (let i = 0; i < strs.length; i++) p[i].textContent = strs[i];
 
             let pathOfImg = ['./images/FibSeq.jpg', './images/FibEx.jpg'];
-            let img = Array.from({length: 2}, () => document.createElement('img'));
+            let img = Array.from({ length: 2 }, () => document.createElement('img'));
             let div1 = document.createElement('div');
             div1.classList.add('divContent');
             div1.style.cssText = `width: 90%; height: 80%; display: flex; margin:0; flex-direction: column; justify-content: flex-start; align-items: center; gap: 15px; overflow-y: auto;`;
@@ -435,7 +440,7 @@ function openTab(typeOfTab) {
             let img1 = document.createElement('img');
             [img.src, img1.src] = imgPath;
 
-            let p = Array.from({length: 2}, () => document.createElement('p'));
+            let p = Array.from({ length: 2 }, () => document.createElement('p'));
 
             img.style.cssText = `max-width:45%; max-height: 100%; border-radius: 8px; object-fit: cover;`;
             img1.style.cssText = `max-width:45%; max-height: 100%; border-radius: 8px; object-fit: cover;`;
@@ -535,57 +540,128 @@ function openTab(typeOfTab) {
             });
 
             let terminalWrapper = document.createElement('div');
-            terminalWrapper.style.cssText = `flex: 3; display: flex; flex-direction: column; background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; padding: 10px 15px;`;
+            terminalWrapper.style.cssText = `flex: 3; display: flex; flex-direction: column; background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; overflow: hidden;`;
 
             let terminalHeader = document.createElement('div');
-            terminalHeader.style.cssText = `color: #858585; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between;`;
-            terminalHeader.innerHTML = `<span>Terminal Output</span><span id="termStatus">Ready</span>`;
+            terminalHeader.style.cssText = `color: #858585; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 15px 6px; font-weight: bold; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;`;
+            terminalHeader.innerHTML = `<span>Terminal</span><span id="termStatus" style="color:#858585;">Ready</span>`;
 
             let terminalOutput = document.createElement('div');
-            terminalOutput.style.cssText = `color: #4CAF50; font-size: 13px; flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;`;
+            terminalOutput.style.cssText = `color: #e6e6e6; font-size: 13px; flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; padding: 10px 15px 6px;`;
             terminalOutput.innerText = ">_ Awaiting compilation...";
+
+            let inputLine = document.createElement('div');
+            inputLine.style.cssText = `display: flex; align-items: center; padding: 6px 15px 8px; border-top: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;`;
+
+            let inputPrompt = document.createElement('span');
+            inputPrompt.style.cssText = `color: #5a9fd4; font-size: 13px; margin-right: 8px; user-select: none;`;
+            inputPrompt.textContent = '❯';
+
+            let inputField = document.createElement('input');
+            inputField.type = 'text';
+            inputField.placeholder = 'waiting for program...';
+            inputField.disabled = true;
+            inputField.setAttribute('spellcheck', 'false');
+            inputField.style.cssText = `flex: 1; background: transparent; border: none; outline: none; color: #e6e6e6; font-family: inherit; font-size: 13px; caret-color: #528bff; opacity: 0.4; transition: opacity 0.2s;`;
+
+            inputLine.appendChild(inputPrompt);
+            inputLine.appendChild(inputField);
 
             terminalWrapper.appendChild(terminalHeader);
             terminalWrapper.appendChild(terminalOutput);
+            terminalWrapper.appendChild(inputLine);
+
+            let ws = null;
+            const statusSpan = () => terminalHeader.querySelector('#termStatus');
+
+            const appendOutput = (text, color) => {
+                const span = document.createElement('span');
+                span.style.color = color || '#e6e6e6';
+                span.textContent = text;
+                terminalOutput.appendChild(span);
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            };
+
+            const setRunning = (running) => {
+                inputField.disabled = !running;
+                inputField.style.opacity = running ? '1' : '0.4';
+                inputField.placeholder = running ? 'Enter input, press Enter...' : 'waiting for program...';
+                compileBtn.innerHTML = running ? '■ Stop' : 'Run <span style="font-size:1.2em;vertical-align:middle;">▶</span>';
+                compileBtn.style.opacity = '1';
+                if (running) inputField.focus();
+            };
+
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && ws && !inputField.disabled) {
+                    const val = inputField.value;
+                    appendOutput(val + '\n', '#5a9fd4');
+                    ws.send(JSON.stringify({ type: 'stdin', data: val }));
+                    inputField.value = '';
+                }
+            });
+
+            compileBtn.onclick = () => {
+                if (ws) {
+                    ws.send(JSON.stringify({ type: 'kill' }));
+                    ws.close();
+                    ws = null;
+                    setRunning(false);
+                    statusSpan().innerText = 'Stopped';
+                    return;
+                }
+
+                terminalOutput.innerHTML = '';
+                statusSpan().innerText = 'Compiling...';
+                statusSpan().style.color = '#FFA500';
+                compileBtn.innerHTML = 'WAIT';
+
+                const serverAddress = "ws://localhost:3000";
+                ws = new WebSocket(serverAddress);
+
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({ type: 'run', code: textarea.value }));
+                };
+
+                ws.onmessage = (e) => {
+                    const msg = JSON.parse(e.data);
+
+                    if (msg.type === 'start') {
+                        setRunning(true);
+                        statusSpan().innerText = 'Running';
+                        statusSpan().style.color = '#4CAF50';
+                    }
+
+                    if (msg.type === 'stdout') {
+                        appendOutput(msg.data, '#e6e6e6');
+                    }
+
+                    if (msg.type === 'stderr') {
+                        appendOutput(msg.data, '#FF6B6B');
+                    }
+
+                    if (msg.type === 'exit') {
+                        statusSpan().innerText = msg.code === 0 ? 'Done ✓' : `Exit ${msg.code}`;
+                        appendOutput(`\n[Process completed with code ${msg.code}]`, '#555');
+                        setRunning(false);
+                        ws = null;
+                    }
+                };
+
+                ws.onerror = (err) => {
+                    console.error("WS Error:", err);
+                    appendOutput('\n>_ Connection error. Is Node.js running on port 3000?\n', '#FF6B6B');
+                    statusSpan().innerText = 'Failed';
+                    setRunning(false);
+                    ws = null;
+                };
+            };
+
             editorWrapper.appendChild(lineNumbers);
             editorWrapper.appendChild(textarea);
             mainContainer.appendChild(editorWrapper);
             mainContainer.appendChild(terminalWrapper);
 
-            compileBtn.onclick = async function () {
-                let statusSpan = terminalHeader.querySelector('#termStatus');
-                terminalOutput.innerText = '';
-                compileBtn.innerHTML = 'WAIT';
-                compileBtn.style.opacity = '0.5';
-                statusSpan.innerText = 'Compiling...';
-                statusSpan.style.color = '#FFA500';
-                terminalOutput.style.color = '#A9A9A9';
-                terminalOutput.innerText = ">_ Clearing console and compiling...\n";
 
-                try {
-                    const res = await sendCode(textarea.value);
-                    terminalOutput.innerText = '';
-                    if (res.status === 'success') {
-                        statusSpan.innerText = 'Success';
-                        statusSpan.style.color = '#4CAF50';
-                        terminalOutput.style.color = '#e6e6e6';
-                        terminalOutput.innerText = res.result;
-                    } else {
-                        statusSpan.innerText = 'Error';
-                        statusSpan.style.color = '#F44336';
-                        terminalOutput.style.color = '#FF6B6B';
-                        terminalOutput.innerText = res.result || res.error;
-                    }
-                } catch (err) {
-                    statusSpan.innerText = 'Failed';
-                    statusSpan.style.color = '#F44336';
-                    terminalOutput.style.color = '#FF6B6B';
-                    terminalOutput.innerText = ">_ Connection error. Is the Node.js server running?";
-                } finally {
-                    compileBtn.innerHTML = 'Run <span style="font-size: 1.2em; vertical-align: middle;">▶</span>';
-                    compileBtn.style.opacity = '1';
-                }
-            };
 
             contentDiv.appendChild(mainContainer);
             contentDiv.appendChild(compileBtn);
@@ -771,8 +847,8 @@ function openTab(typeOfTab) {
 
                 try {
 
-                    if(button) button.style.display = 'none';
-                    const response = await fetch('/api/aiResponse', {
+                    if (button) button.style.display = 'none';
+                    const response = await fetch('https://temporary-4qcg.onrender.com/api/aiResponse', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ question: text })
@@ -788,13 +864,13 @@ function openTab(typeOfTab) {
                     }
 
                 } catch (err) {
-                    if(document.getElementById(tempId)) document.getElementById(tempId).remove();
+                    if (document.getElementById(tempId)) document.getElementById(tempId).remove();
                     displayMessage("⚠️ Бэкенд не отвечает. Проверь консоль сервера.", false);
                 }
             };
 
             textArea.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendBtn.click();
                 }
@@ -809,10 +885,16 @@ function openTab(typeOfTab) {
         }
     }
 
-    if (Stack[1].size || Stack[1].has(name)) {
+    if (Stack[1].has(name)) {
         div.remove();
         delete cache[div.id];
         return;
+    }
+
+    if (Stack[1].size) {
+        const [, currentTab] = [...Stack[1].entries()][0];
+        const cacheKey = currentTab.id || 'recomendations';
+        svernut(cacheKey);
     }
 
     if (Stack[0].has(name)) {
@@ -859,8 +941,8 @@ function openTab(typeOfTab) {
     h1.style.cssText = `position: absolute; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; color: #391313; font-family: "Samsung Sharp Sans", sans-serif; font-weight: bold;`;
 
     div.psevdoName = name || 'Unknown';
-    if(window.innerWidth > 1024 && window.innerHeight > 1024)
-    div.appendChild(h1);
+    if (window.innerWidth > 1024 && window.innerHeight > 1024)
+        div.appendChild(h1);
     document.body.appendChild(div);
     Stack[1].set(div.psevdoName, div);
 

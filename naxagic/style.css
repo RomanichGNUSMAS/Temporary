@@ -216,6 +216,12 @@ body {
     flex-direction: row;
 }
 
+.globber {
+    padding: 5px;
+    margin-top:12%;
+    margin-left:0;
+}
+
 .complexity {
     overflow-y: auto;
 }
@@ -264,7 +270,7 @@ body {
 }
 
 .complexity {
-    width: 25%;
+    width: 35%;
     height: 80%;
     display: flex;
     text-align: center;
@@ -384,3 +390,26 @@ p {
     inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
+
+
+/* Стили для кнопок управления */
+.mac-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: transparent; /* Скрываем символы по умолчанию */
+}
+
+/* Показываем символы при наведении на родительский контейнер */
+.mac-controls:hover .mac-btn {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.mac-red::before { content: "✕"; }
+.mac-yellow::before { content: "−"; }
+.mac-green::before { content: "＋"; } /* Для полноэкранного режима */
