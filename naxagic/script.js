@@ -391,32 +391,8 @@ function openTab(typeOfTab) {
     switch (typeOfTab) {
         case 'Wiki': {
             name = 'Recursion Wiki';
-            let p = Array.from({ length: 2 }, () => document.createElement('p'));
-            const strs = ["Ռեկուրսիան իրենից ներկայացնում է ցանկացած օբյեկտի, երևույթի կամ գործընթացի սահմանման այնպիսի մեթոդ, որի դեպքում տվյալ օբյեկտը նկարագրվում է հենց իր միջոցով։ Սա մի եզակի իրավիճակ է, երբ համակարգի կառուցվածքային ամբողջականությունը ենթադրում է հենց նույնատիպ օբյեկտի առկայություն իր իսկ ներսում՝ ավելի փոքր մասշտաբով կամ պարզեցված տեսքով։ Ըստ էության, մենք գործ ունենք ինքնանմանության սկզբունքի հետ, որտեղ գործընթացի յուրաքանչյուր քայլ հղում է կատարում նախորդին կամ հաջորդին՝ ստեղծելով տրամաբանական մի շղթա, որտեղ ամբողջը բաղկացած է իր իսկ պատճեններից:", "Ռեկուրսիայի հասկացությունը հիմնարար դերակատարում ունի մարդկային գիտելիքների ամենատարբեր բնագավառներում՝ սկսած լեզվաբանական կառուցվածքների վերլուծությունից, որտեղ նախադասությունները կարող են ներառել այլ նախադասություններ, մինչև ֆորմալ տրամաբանություն և փիլիսոփայություն։ Սակայն իր առավելագույն գործնական և տեսական արժեքը ռեկուրսիան ստանում է մաթեմատիկական գիտություններում և համակարգչային ճարտարագիտության մեջ։ Ծրագրավորման մեջ այն հանդիսանում է հզորագույն գործիք, որը թույլ է տալիս բարդ խնդիրները տրոհել ավելի պարզ, նույնատիպ ենթախնդիրների՝ ապահովելով կոդի էլեգանտությունն ու ալգորիթմական լուծումների արդյունավետությունը հատկապես տվյալների կառուցվածքների հետ աշխատելիս։"]
-            for (let i = 0; i < strs.length; i++) p[i].textContent = strs[i];
-
-            let pathOfImg = ['./images/FibSeq.jpg', './images/FibEx.jpg'];
-            let img = Array.from({ length: 2 }, () => document.createElement('img'));
-            let div1 = document.createElement('div');
-            div1.classList.add('divContent');
-            div1.style.cssText = `width: 90%; height: 80%; display: flex; margin:0; flex-direction: column; justify-content: flex-start; align-items: center; gap: 15px; overflow-y: auto;`;
-
-            let imgContainer = document.createElement('div');
-            imgContainer.style.cssText = `display: flex; flex-direction: row; justify-content: center; gap: 10px; width: 100%;`;
-
-            img.forEach((element, index) => {
-                element.src = pathOfImg[index];
-                element.style.width = "45%";
-                element.style.objectFit = "cover";
-                element.style.borderRadius = "8px";
-                imgContainer.appendChild(element);
-            });
-
-            div1.appendChild(p[0]);
-            div1.appendChild(imgContainer);
-            div1.appendChild(p[1]);
-            div.appendChild(div1);
-            break;
+            window.open('https://en.wikipedia.org/wiki/Recursion', '_blank');
+            return;
         }
         case 'Examples': {
             name = 'Recursion Examples';
