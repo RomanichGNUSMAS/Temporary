@@ -591,7 +591,7 @@ function openTab(typeOfTab) {
                 statusSpan().style.color = '#FFA500';
                 compileBtn.innerHTML = 'WAIT';
 
-                const serverAddress = "ws://localhost:3000";
+                const serverAddress = "wss://temporary-4qcg.onrender.com";
                 ws = new WebSocket(serverAddress);
 
                 ws.onopen = () => {

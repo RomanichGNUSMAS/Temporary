@@ -104,7 +104,7 @@ app.post('/api/aiResponse', async (req, res) => {
     if (!question) return res.status(400).json({ error: "Հարցը բացակայում է" });
 
     try {
-        const combinedMessage = `Դու macOS Tahoe ոճի ինտերֆեյսով համակարգի օգնական ես։ Պատասխանիր հակիրճ և խելացի, օгնիր ինձ C++-ի և ռեկուрсիայի հарцерум։\n\nАха иmy հарцы. ${question}`;
+        const combinedMessage = `Դու macOS Tahoe ոճի ինտերֆեյսով համակարգի օգնական ես։ Պատասխանիր հակիրճ և խելացի, օգնիր ինձ C++-ի և ռեկուրսիայի հարցերում։\n\nԱհա և հարց. ${question}`;
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -116,14 +116,14 @@ app.post('/api/aiResponse', async (req, res) => {
                 messages: [{ role: "user", content: combinedMessage }]
             })
         });
-
         const data = await response.json();
+        console.log(data);
         if (data.error) return res.status(500).json({ error: "AI սерверը схал верадарцрец" });
 
         if (data.choices?.length > 0) {
-            res.json({ status: "success", result: data.choices[0].message.content });
+            return res.json({ status: "success", result: data.choices[0].message.content });
         } else {
-            res.status(500).json({ error: "AI-ն анhасканали патасхан верадарцрец" });
+            return res.status(500).json({ error: "AI-ն анhасканали патасхан верадарцрец" });
         }
     } catch (error) {
         console.error("Server Fetch Error:", error);
