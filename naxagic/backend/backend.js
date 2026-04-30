@@ -35,7 +35,6 @@ wss.on('connection', (ws) => {
         }
         if (tmpDir) {
             try {
-                // maxRetries скажет Node.js: "попробуй удалить 5 раз с интервалом в 100мс"
                 fs.rmSync(tmpDir, {
                     recursive: true,
                     force: true,

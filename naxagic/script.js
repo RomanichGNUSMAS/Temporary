@@ -345,7 +345,7 @@ function executeSvernutLogic(rc, rec, reference) {
 async function sendCode(code, stdin) {
     if (!code) return false;
     try {
-        const response = await fetch('localhost:3000/api/compile', {
+        const response = await fetch('https://temporary-4qcg.onrender.com/api/compile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cppCode: code, stdin: stdin })
