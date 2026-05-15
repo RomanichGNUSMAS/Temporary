@@ -483,7 +483,7 @@ function openTab(typeOfTab) {
             mainContainer.style.cssText = `display: flex; flex-direction: column; width: 90%; height: 91%; position: fixed; top: 50px; left: 1%; border-radius: 27px; box-shadow: rgba(0, 0, 0, 0.5) 0px 20px 50px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);`;
 
             let editorWrapper = document.createElement('div');
-            editorWrapper.style.cssText = ` display: flex; flex: 7; background: rgba(30, 30, 30, 0.65); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; font-size: 13px; line-height: 1.6; border-bottom: 1px solid rgba(255, 255, 255, 0.1);`;
+            editorWrapper.style.cssText = `overflow:auto; display: flex; flex: 7; background: rgba(30, 30, 30, 0.65); backdrop-filter: blur(20px); font-family: Menlo, Monaco, "Courier New", monospace; font-size: 13px; line-height: 1.6; border-bottom: 1px solid rgba(255, 255, 255, 0.1);`;
 
             let lineNumbers = document.createElement('div');
             lineNumbers.style.cssText = `width: 45px; background-color: rgba(255, 255, 255, 0.03); color: #5c6370; text-align: right; padding: 15px 10px 10px 0; box-sizing: border-box; border-right: 1px solid rgba(255, 255, 255, 0.05); user-select: none; overflow: hidden; font-family: inherit;`;
