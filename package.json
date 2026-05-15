@@ -1,4 +1,11 @@
 {
+  "name": "temporary",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node naxagic/backend/backend.js"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -7,12 +14,8 @@
     "serve": "^14.2.6",
     "ws": "^8.20.0"
   },
-  "name": "temporary",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node naxagic/backend/backend.js"
+  "overrides": {
+    "debug": "4.3.4"
   },
   "repository": {
     "type": "git",
