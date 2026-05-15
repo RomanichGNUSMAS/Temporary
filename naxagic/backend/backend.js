@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const http = require('http');          // ← добавь
+const http = require('http');
 const WebSocket = require('ws');
 const { exec, spawn } = require('child_process');
 const dotenv = require('dotenv');
@@ -21,8 +21,8 @@ app.get('/', (req, res) => {
 });
 
 // ── WebSocket ────────────────────────────────────────────────
-const server = http.createServer(app);   // ← один сервер
-const wss = new WebSocket.Server({ server }); // ← привязан к нему
+const server = http.createServer(app); 
+const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
     let proc = null;
@@ -130,7 +130,6 @@ app.post('/api/aiResponse', async (req, res) => {
     }
 });
 
-// ── Запуск ───────────────────────────────────────────────────
 server.listen(PORT, () => {   
     console.log(`🚀 Server starts in: http://localhost:${PORT}`);
 });
